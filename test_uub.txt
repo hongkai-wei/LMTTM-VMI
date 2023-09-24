@@ -1,0 +1,1 @@
+git_remote_test_del.txt
