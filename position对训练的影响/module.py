@@ -106,7 +106,6 @@ class pos_add(nn.Module):   #
             1, mem_out_tokens.size(1), mem_out_tokens.size(2))).cuda()
         init.normal_(posemb_init, std=0.02)
         mem_out_tokens = mem_out_tokens + posemb_init
-        self.register_parameter("pos", posemb_init)
         return mem_out_tokens
 
 
