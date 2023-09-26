@@ -3,13 +3,12 @@ MODIFY:
 add linear after conv3d
 reduce dim by using linear
 '''
-import torch.nn.init as init
 import torch
 import torch.nn as nn
 import einops
 from einops import rearrange, reduce, repeat
 from einops.layers.torch import Rearrange
-batch = 21
+batch = 32
 step = 28
 dim = 512
 in_channels = 1
@@ -94,21 +93,6 @@ class token_add_earse(nn.Module):
         return output
 
 
-class pos_add(nn.Module):
-    def __init__(self) -> None:
-        super(pos_add, self).__init__()
-
-    def forward(self, x):  # B LEN C
-
-        mem_out_tokens = x
-        posemb_init = torch.nn.Parameter(torch.empty(
-            1, mem_out_tokens.size(1), mem_out_tokens.size(2))).cuda()
-        init.normal_(posemb_init, std=0.02)
-        mem_out_tokens = mem_out_tokens + posemb_init
-        self.register_buffer("pos", posemb_init)
-        return mem_out_tokens
-
-
 class ttm_unit(nn.Module):
     def __init__(self) -> None:
         super(ttm_unit, self).__init__()
@@ -118,12 +102,9 @@ class ttm_unit(nn.Module):
             dim, dim*3), nn.GELU(), nn.Linear(dim*3, dim), nn.GELU())
         self.lay = 3
         self.norm = nn.LayerNorm(dim)
-        # self.pos_add=pos_add()
 
     def forward(self, step_input, mem):
-        # shape: B,STEP,TOKEN,DIM
         all_token = torch.cat((mem, step_input), dim=1)
-        # all_token=self.pos_add(all_token)
         all_token = self.token_mha(all_token)
         output_token = all_token
         for i in range(self.lay):
@@ -148,7 +129,7 @@ class ttm(nn.Module):
             (step//patch_size)*speical_token, out_features=1)
         self.laynorm = nn.LayerNorm(512)
 
-    def forward(self, input, mem=None, step=4000):
+    def forward(self, input, mem=None):
         input = self.pre(input)
         b, t, len, c = input.shape
         outs = []
@@ -168,127 +149,16 @@ class ttm(nn.Module):
         # out=nn.AdaptiveAvgPool1d(1)(out)
         out = out.squeeze(2)
         out = self.relu(out)
-        self.mem = self.laynorm(self.mem)
-        self.mem, rate = mem_process(self.mem, step)
-        # self.mem=mem_process_v2(self.mem)
-
-        return self.cls(out), self.mem, rate
+        self.mem = add_noise(self.mem)
+        return self.cls(out), self.mem
 
 
-# add noise to memory
-def mem_process(mem: torch.Tensor, decay_weight):
-    b, len, dim = mem.shape
-    noise = torch.randn((b, len, dim)).cuda()
-    special_step = 4000
-    decat_rate = 1-(decay_weight/special_step)
-    rate = 0.32*decat_rate
-    if rate > 0.15:
-        rate = rate
-    else:
-        rate = 0
-
-    return rate*noise+1*mem, rate
-
-
-def mem_process_v2(mem: torch.Tensor):
-    b, len, dim = mem.shape
-    noise = torch.randn((b, len, dim)).cuda()
-    rate = 0.342
-    return rate*noise+1*mem
+def add_noise(mem: torch.Tensor):
+    noise = torch.randn_like(mem)
+    rate = 0.42
+    mem = torch.nn.LayerNorm(mem.size(-1))(mem)
+    return mem + rate*noise
 
 
 if __name__ == "__main__":
-    # ttm_input=torch.randn(8,1,60,196,196).cuda()
-    # model=ttm().cuda()
-    # out,mem=model(ttm_input)
-    # print(out.shape)
-    # raise KeyboardInterrupt
-
-    import medmnist
-    import torchvision.transforms as transforms
-    from medmnist import INFO, Evaluator
-    import torch.utils.data as data
-    BATCH_SIZE = 30
-    data_flag = "organmnist3d"
-    download = False
-    root = r'C:\Users\BYounng\Documents\vscode\vivit\data'
-    info = INFO[data_flag]
-    task = info['task']
-    n_channels = info['n_channels']
-    n_classes = len(info['label'])
-    DataClass = getattr(medmnist, info['python_class'])
-
-    train_dataset = DataClass(split='train', root=root, download=download)
-    test_dataset = DataClass(split='test', root=root, download=download)
-    valid_dataset = DataClass(split='val', root=root, download=download)
-    train_loader = data.DataLoader(
-        train_dataset, batch_size=BATCH_SIZE, shuffle=True, drop_last=True)
-    # val_dataloader=data.DataLoader(train_dataset,batch_size=BATCH_SIZE,shuffle=True,drop_last=True)
-    data = data.DataLoader(
-        valid_dataset, batch_size=BATCH_SIZE, shuffle=True, drop_last=True)
-    # 这是  预测部分 如果要训练请把这部分注释掉
-    # import tqdm
-    # all_y=0
-    # all_real=0
-
-    # a=torch.load(r"F:\ttm_2\BEST__complex_TTM_10920_loss0.0161.pth")
-    # load_mem=a["mem"]
-    # load_state=a["mdoel"]
-    # model.load_state_dict(load_state)
-    # model.eval()
-    # for x,y in tqdm.tqdm(data):
-    #         x=Rearrange('b c t h w -> b t c h w')(x)
-    #         x=x.to("cuda",dtype=torch.float32)
-    #         y=y.to("cuda",dtype=torch.long)
-    #         out,mem=model(x)
-
-    #         # 99.58333333333333%
-    #         # out,mem=model(x,load_mem)     #acc is 38.229166666666664%
-    #         out=torch.argmax(out,dim=1)
-    #         y=y.squeeze(1)
-    #         all=y.size(0)
-    #         result=(out==y).sum().item()
-    #         all_y+=all
-    #         all_real+=result
-
-    #  ###   B,C,STEP,H,W
-    # print("总样本数：",all_y,"预测对的数目:",all_real)
-    # print("acc is {}%".format((all_real/all_y)*100))
-
-    # raise KeyboardInterrupt
-
-    # ##############################eval 部分结束
-
-    # 下面是train部分
-
-    # import tqdm
-    # from torch.utils.tensorboard import SummaryWriter
-    # loger=SummaryWriter("success")
-    # optim=torch.optim.AdamW(model.parameters(),1e-5,weight_decay=1e-4)
-    # cit=nn.CrossEntropyLoss()
-    # losses=[]
-    # flag=1
-
-    # for i in range(350):
-    #     for x,y in tqdm.tqdm(train_loader):
-    #         # x = x.type(torch.float32)
-    #         x=Rearrange('b c t h w -> b t c h w')(x)
-    # x=x.to("cuda",dtype=torch.float32)
-    #         y=y.to("cuda",dtype=torch.long)
-    #         # y=y.type(torch.long)
-    #         optim.zero_grad()
-    #         out,save_mem=model(x)
-    #         loss=cit(out,y.squeeze(1))
-    #         losses.append(loss.item())
-    #         loss.backward()
-    #         optim.step()
-    #         loger.add_scalar("loss per step ",loss.item(),flag)
-    #         if flag%42==0:
-    #             save_loss=sum(losses)/len(losses)
-    #             loger.add_scalar("loss per 300 step ",save_loss,flag)
-    #             print(save_loss)
-    #             losses=[]
-    #             # print("*"*10)
-    #             torch.save({"mdoel":model.state_dict(),"mem":save_mem},f"F:\\ttm_2\\_complex_TTM_{flag}_loss{save_loss:.4f}.pth")
-    #             # raise KeyboardInterrupt
-    #         flag+=1
+    pass

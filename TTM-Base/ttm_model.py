@@ -6,7 +6,7 @@ from einops.layers.torch import Rearrange
 from tokenlearner import TokenLearner, TokenLearnerModuleV11
 import torch.nn.init as init
 
-batch = 64       # 批量大小
+batch = 32       # 批量大小
 step = 28          # 步长
 in_channels = 1    # 输入通道数
 dim = 64          # 维度
@@ -266,7 +266,7 @@ class TokenTuringMachineEncoder(nn.Module):
         if mem == None:
             mem = self.mem  # c, h, w
         else:
-            mem = mem
+            mem = mem.detach()
         for i in range(t):
             mem, out = self.TokenTuringMachineUnit(mem, input[:, i, :, :])
             # mem, out=self.TokenTuringMachineUnit(mem, input[:,i,:,:,:])

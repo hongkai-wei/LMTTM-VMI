@@ -10,7 +10,7 @@ import torch.nn as nn
 import einops
 from einops import rearrange, reduce, repeat
 from einops.layers.torch import Rearrange
-batch = 21
+batch = 32
 step = 28
 dim = 512
 in_channels = 1
@@ -122,6 +122,7 @@ class ttm_unit(nn.Module):
 
     def forward(self, step_input, mem):
         # shape: B,STEP,TOKEN,DIM
+
         all_token = torch.cat((mem, step_input), dim=1)
         all_token = self.pos_add(all_token)  # 加入位置信息
         all_token = self.token_mha(all_token)

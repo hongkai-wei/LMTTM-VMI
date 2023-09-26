@@ -6,7 +6,7 @@ import medmnist
 import tqdm
 from einops.layers.torch import Rearrange
 # input b c t h w ,out : out [b,clss] mem[b,size,dim]
-from module import ttm
+from module_mem import ttm
 import torch
 model = ttm().cuda()
 mem = None
@@ -33,7 +33,7 @@ val_dataloader = data.DataLoader(
 test_dataloader = data.DataLoader(
     test_dataset, batch_size=BATCH_SIZE, shuffle=True, drop_last=True)
 loger = SummaryWriter(
-    r"F:\git_ttm\logger\module_have_pos_log_version2.0")
+    r"F:\git_ttm\logger\module_mem_no_noise")
 bar_all = tqdm.tqdm(range(250))
 i = 1
 acc_i = 1
@@ -48,26 +48,26 @@ for _ in bar_all:
         y = y.squeeze(1)
         x = x.to("cuda", dtype=torch.float32)
         y = y.to("cuda", dtype=torch.long)
-        out, mem = model(x)
+        out, mem = model(x, mem)
         optimizer.zero_grad()
         loss = citirion(out, y)
         losses.append(loss.item())
         loss.backward()
         optimizer.step()
         bar.set_postfix(loss=loss.item())
-        loger.add_scalar("loss per step", loss.item(), i)
+        loger.add_scalar("loss per step ", loss.item(), i)
         if i % 100 == 0:
             avg = sum(losses)/len(losses)
             loger.add_scalar("loss per 100 step", avg, i)
             if (avg <= 0.08 and if_save == 0):
                 torch.save({"mem": mem, "mdoel": model.state_dict(
-                )}, r"F:\git_ttm\path\_module_have_pos_log_version2.0_{}.pth".format(avg))
+                )}, r"F:\git_ttm\path\_module_mem_no_noise_{}.pth".format(avg))
                 if_save = 1
             for val_x, val_y in test_dataloader:
                 model.eval()
                 val_x = val_x.to("cuda", dtype=torch.float32)
                 val_y = val_y.to("cuda", dtype=torch.long)
-                out, mem = model(val_x)
+                out, mem_ = model(val_x, mem)
                 out = torch.argmax(out, dim=1)
                 val_y = val_y.squeeze(1)
                 all = val_y.size(0)
