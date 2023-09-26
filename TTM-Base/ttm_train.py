@@ -10,7 +10,7 @@ import torch.utils.data as data
 import tqdm
 from torch.utils.tensorboard import SummaryWriter
 
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 data_flag = "organmnist3d"  # organmnist3d是3d的数据集，organmnist是2d的数据集
 download = False
 root = r'C:\Users\BYounng\Documents\vscode\vivit\data'
@@ -30,7 +30,7 @@ val_dataloader = data.DataLoader(
     train_dataset, batch_size=BATCH_SIZE, shuffle=True, drop_last=True)
 
 
-loger = SummaryWriter("F:\git_ttm\logger\hk")
+loger = SummaryWriter("F:\git_ttm\logger\module_mem_have_noise")
 model = TokenTuringMachineEncoder().cuda()
 optim = torch.optim.AdamW(model.parameters(), 1e-3, weight_decay=1e-4)
 cit = nn.CrossEntropyLoss()

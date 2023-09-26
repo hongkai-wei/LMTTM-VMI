@@ -6,7 +6,7 @@ from einops.layers.torch import Rearrange
 from tokenlearner import TokenLearner, TokenLearnerModuleV11
 import torch.nn.init as init
 
-batch = 32       # 批量大小
+batch = 64       # 批量大小
 step = 28          # 步长
 in_channels = 1    # 输入通道数
 dim = 64          # 维度
@@ -279,9 +279,17 @@ class TokenTuringMachineEncoder(nn.Module):
         # AdaptiveAvgPool1d是自适应平均池化层，输出的形状是[batch,dim,1]
         out = nn.AdaptiveAvgPool1d(1)(out)
         out = out.squeeze(2)
-        # print(out.shape)
+        mem = add_noise(mem)
 
         return self.cls(out), mem  # 原来是正常的out和 mem
+
+
+def add_noise(mem: torch.Tensor):
+    noise = torch.randn_like(mem)
+    rate = 0.42
+    mem = torch.nn.LayerNorm(mem.size(-1)).cuda()(mem)
+
+    return mem + rate*noise
 
 
 if __name__ == "__main__":
