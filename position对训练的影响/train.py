@@ -6,7 +6,7 @@ import medmnist
 import tqdm
 from einops.layers.torch import Rearrange
 # input b c t h w ,out : out [b,clss] mem[b,size,dim]
-from module import ttm
+from module_no_pos import ttm
 import torch
 model = ttm().cuda()
 mem = None
@@ -33,7 +33,7 @@ val_dataloader = data.DataLoader(
 test_dataloader = data.DataLoader(
     test_dataset, batch_size=BATCH_SIZE, shuffle=True, drop_last=True)
 loger = SummaryWriter(
-    r"F:\git_ttm\logger\module_have_pos_log_version2.0")
+    r"F:\git_ttm\logger\module_no_pos")
 bar_all = tqdm.tqdm(range(250))
 i = 1
 acc_i = 1
@@ -61,7 +61,7 @@ for _ in bar_all:
             loger.add_scalar("loss per 100 step", avg, i)
             if (avg <= 0.08 and if_save == 0):
                 torch.save({"mem": mem, "mdoel": model.state_dict(
-                )}, r"F:\git_ttm\path\_module_have_pos_log_version2.0_{}.pth".format(avg))
+                )}, r"F:\git_ttm\path\_module_no_pos_{}.pth".format(avg))
                 if_save = 1
             for val_x, val_y in test_dataloader:
                 model.eval()
