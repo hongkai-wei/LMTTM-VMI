@@ -17,7 +17,7 @@ class Config:
             raise Exception("This class is a singleton!")
         else:
             Config.__instance = self
-            self.__loadConfig(os.path.join(os.path.dirname(__file__), "base.json"))
+            self.__loadConfig(os.path.join(os.path.dirname(__file__), "base.json"))#__file__在Python里面是指当前文件的文件名
             if config_file != "base.json":
                 self.__loadConfig(os.path.join(os.path.dirname(__file__), config_file))
 
@@ -51,4 +51,13 @@ class Config:
 
     def __str__(self):
         return str(self.__config)
-    
+
+
+
+if __name__=="__main__":
+    config_file = "base.json"
+    config_file = os.path.join(os.path.dirname(__file__), config_file)
+
+    x=Config(config_file)
+    pass
+    pass
