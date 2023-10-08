@@ -1,4 +1,4 @@
-from model.mem_basic_network import ttm
+from model.ttm_basic_network import ttm
 from utils.log import logger
 from config import Config
 configs = Config.getInstance()["train"]
