@@ -9,9 +9,10 @@ import einops
 from einops import rearrange, reduce, repeat
 from einops.layers.torch import Rearrange
 import torch.nn.init as init
+from tokenLearner_network import TokenLearnerModuleV11
 drop_r = 0.0
 process_unit_mode = "mix"
-summay_mode = "MHA"
+summay_mode = "token_learner"
 mem_mode = "add_earse"
 in_channels = 1
 dim = 512
@@ -20,7 +21,8 @@ step = 28
 in_channels = 1
 patch_size = 4
 speical_num_tokens = 8
-positional_use = True
+positional_use = False
+
 
 
 class pre_procee(nn.Module):  # 输入B,C,STEP,H,W  最终得到B C STEP TOKEN -> B STEP TOKEN C
@@ -39,9 +41,9 @@ class pre_procee(nn.Module):  # 输入B,C,STEP,H,W  最终得到B C STEP TOKEN -
         return x
 
 
-class token_mha(nn.Module):
+class tokenLearner_mha(nn.Module):
     def __init__(self) -> None:
-        super(token_mha, self).__init__()
+        super(tokenLearner_mha, self).__init__()
         speical_num_token = speical_num_tokens
         self.query = nn.Parameter(torch.randn(
             batch, speical_num_token, dim).cuda())
@@ -54,9 +56,9 @@ class token_mha(nn.Module):
 
 
 # mem B,SIZE,DIM  control B,8,DIM    #OUT B,SIZE,DIM
-class token_add_earse(nn.Module):
+class token_add_erase_write(nn.Module):
     def __init__(self) -> None:
-        super(token_add_earse, self).__init__()
+        super(token_add_erase_write, self).__init__()
         speical_num_token = 8
         self.trasns_bolck1 = nn.Sequential(
             nn.LayerNorm(dim), nn.Linear(
@@ -107,12 +109,20 @@ class ttm_unit(nn.Module):
         super(ttm_unit, self).__init__()
         self.mem_mode = mem_mode
         self.process_unit = process_unit_mode
-        self.summay_mode = summay_mode
+        self.memory_mode = summay_mode
         self.use_positional_embedding = positional_use
-        self.token_mha = token_mha()
-        self.token_add_earse = token_add_earse()
-        self.mlp = nn.Sequential(nn.LayerNorm(dim), nn.Linear(
-            dim, dim*3), nn.Dropout(drop_r), nn.GELU(), nn.Linear(dim*3, dim), nn.GELU(), nn.Dropout(drop_r))
+        self.tokenLearner1 = TokenLearnerModuleV11(in_channels=64,num_tokens=16,num_groups=1)
+        self.tokenLearner2 = TokenLearnerModuleV11(in_channels=64,num_tokens=1024,num_groups=1)
+        self.transformer_block = nn.TransformerEncoderLayer(d_model = dim, nhead = 8, dim_feedforward = dim * 3, dropout = 0.2)
+        self.tokenLearner_mha = tokenLearner_mha()
+        self.token_add_erase_write = token_add_erase_write()
+        self.mlp = nn.Sequential(nn.LayerNorm(dim), 
+                                 nn.Linear(dim, dim*3), 
+                                 nn.Dropout(drop_r), 
+                                 nn.GELU(), 
+                                 nn.Linear(dim*3, dim), 
+                                 nn.GELU(), 
+                                 nn.Dropout(drop_r))
         self.lay = 3
         self.norm = nn.LayerNorm(dim)
         num_tokens = speical_num_tokens
@@ -129,27 +139,23 @@ class ttm_unit(nn.Module):
                                                    nn.GELU())
 
     def forward(self, step_input, mem):
-        all_token = torch.cat((mem, step_input), dim=1)
-# add posiutional
+        all_tokens = torch.cat((mem, step_input), dim=1)
+        # add posiutional
         if self.use_positional_embedding:
-            all_token = all_token.cuda()
+            all_tokens = all_tokens.cuda()
             posemb_init = torch.nn.Parameter(torch.empty(
-                1, all_token.size(1), all_token.size(2))).cuda()
+                1, all_tokens.size(1), all_tokens.size(2))).cuda()
             init.normal_(posemb_init, std=0.02)
             # mem_out_tokens的shape是[batch,mem_size+special_num_token,dim]
-            all_token = all_token + posemb_init
+            all_tokens = all_tokens + posemb_init
 
-################
-        if self.summay_mode == "MHA":
-            all_token = self.token_mha(all_token)
-        elif self.summay_mode == "token_learner":
-            '''       修改_这里加上token_learner的代码     '''
-            pass
-
-        output_token = all_token
+        if self.memory_mode == "token_learner" or self.memory_mode == 'token_add_earse_write':
+            all_tokens=self.tokenLearner1(all_tokens)
+        elif self.memory_mode == "tokenLearner_mha":
+            all_tokens = self.tokenLearner_mha(all_tokens)
 
         if self.process_unit == "mix":
-            output_tokens = output_token
+            output_tokens = all_tokens
             for _ in range(self.lay):
                 # Token mixing，token混合
                 x_output_tokens = output_tokens
@@ -168,32 +174,39 @@ class ttm_unit(nn.Module):
                 y_output_tokens = self.norm(x_output_tokens)
                 y_output_tokens = self.mixer_channels__block(y_output_tokens)
                 y_output_tokens = nn.Dropout(drop_r)(y_output_tokens)
-                output_token = output_tokens + y_output_tokens
+                output_tokens = output_tokens + y_output_tokens
+            output_tokens = self.norm(output_tokens)
+
         elif self.process_unit == "mlp":
-            for i in range(self.lay):
-                output_token = self.mlp(output_token)
-            output_token = self.norm(output_token)
+            output_tokens = all_tokens
+            for _ in range(self.lay):
+                output_tokens = self.mlp(output_tokens)
+            output_tokens = self.norm(output_tokens)
+
         elif self.process_unit == "transformer":
-            pass
+            output_tokens = all_tokens
+            for _ in range(self.num_layers):
+                output_tokens = self.transformer_block(output_tokens)
+            output_tokens = self.norm(output_tokens)
 
-        mem_out_tokens = torch.cat((mem, step_input, output_token), dim=1)
+        mem_out_tokens = torch.cat((mem, step_input, output_tokens), dim=1)
 
-        if self.mem_mode == "add_earse":
-            mem_out_tokens = self.token_add_earse(mem, output_token)
-        elif self.mem_mode == "token_learner":
-            pass
-        elif self.mem_mode == "MHA":
-            pass
+        if self.memory_mode == 'tokenLearner':
+            mem_out_tokens = self.tokenLearner2(mem_out_tokens)
+        elif self.memory_mode == 'tokenLearner_mha':
+            mem_out_tokens = self.tokenLearner_mha(mem_out_tokens)
+        elif self.memory_mode == 'token_add_erase_write':
+            mem_out_tokens = self.token_add_erase_write(mem, output_tokens)
 
-        return (mem_out_tokens, output_token)
+        return (mem_out_tokens, output_tokens)
 
 
-class ttm(nn.Module):
+class ttm_encoder(nn.Module):
     def __init__(self) -> None:
         self.mem_size = 128
         step = 28
         speical_token = 8
-        super(ttm, self).__init__()
+        super(ttm_encoder, self).__init__()
         self.memmo = torch.zeros(batch, self.mem_size, dim).cuda()
         self.ttm_unit = ttm_unit()
         self.cls = nn.Linear(dim, 11)
@@ -207,10 +220,9 @@ class ttm(nn.Module):
         input = self.pre(input)
         b, t, len, c = input.shape
         outs = []
-        if mem == None:
+        if mem == None: # 可以设置下，mem是否持续化，如果不持续化，就是每次都是新的mem
             self.mem = self.memmo
         else:
-
             self.mem = mem.detach()
         for i in range(t):
             self.mem, out = self.ttm_unit(input[:, i, :, :], self.mem)
