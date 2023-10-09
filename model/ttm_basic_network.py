@@ -24,7 +24,6 @@ speical_num_tokens = 8
 positional_use = False
 
 
-
 class pre_procee(nn.Module):  # 输入B,C,STEP,H,W  最终得到B C STEP TOKEN -> B STEP TOKEN C
     def __init__(self) -> None:
         super(pre_procee, self).__init__()
@@ -111,17 +110,20 @@ class ttm_unit(nn.Module):
         self.process_unit = process_unit_mode
         self.memory_mode = summay_mode
         self.use_positional_embedding = positional_use
-        self.tokenLearner1 = TokenLearnerModuleV11(in_channels=64,num_tokens=16,num_groups=1)
-        self.tokenLearner2 = TokenLearnerModuleV11(in_channels=64,num_tokens=1024,num_groups=1)
-        self.transformer_block = nn.TransformerEncoderLayer(d_model = dim, nhead = 8, dim_feedforward = dim * 3, dropout = 0.2)
+        self.tokenLearner1 = TokenLearnerModuleV11(
+            in_channels=64, num_tokens=16, num_groups=1)
+        self.tokenLearner2 = TokenLearnerModuleV11(
+            in_channels=64, num_tokens=1024, num_groups=1)
+        self.transformer_block = nn.TransformerEncoderLayer(
+            d_model=dim, nhead=8, dim_feedforward=dim * 3, dropout=0.2)
         self.tokenLearner_mha = tokenLearner_mha()
         self.token_add_erase_write = token_add_erase_write()
-        self.mlp = nn.Sequential(nn.LayerNorm(dim), 
-                                 nn.Linear(dim, dim*3), 
-                                 nn.Dropout(drop_r), 
-                                 nn.GELU(), 
-                                 nn.Linear(dim*3, dim), 
-                                 nn.GELU(), 
+        self.mlp = nn.Sequential(nn.LayerNorm(dim),
+                                 nn.Linear(dim, dim*3),
+                                 nn.Dropout(drop_r),
+                                 nn.GELU(),
+                                 nn.Linear(dim*3, dim),
+                                 nn.GELU(),
                                  nn.Dropout(drop_r))
         self.lay = 3
         self.norm = nn.LayerNorm(dim)
@@ -150,7 +152,7 @@ class ttm_unit(nn.Module):
             all_tokens = all_tokens + posemb_init
 
         if self.memory_mode == "token_learner" or self.memory_mode == 'token_add_earse_write':
-            all_tokens=self.tokenLearner1(all_tokens)
+            all_tokens = self.tokenLearner1(all_tokens)
         elif self.memory_mode == "tokenLearner_mha":
             all_tokens = self.tokenLearner_mha(all_tokens)
 
@@ -201,12 +203,12 @@ class ttm_unit(nn.Module):
         return (mem_out_tokens, output_tokens)
 
 
-class ttm_encoder(nn.Module):
+class ttm(nn.Module):
     def __init__(self) -> None:
         self.mem_size = 128
         step = 28
         speical_token = 8
-        super(ttm_encoder, self).__init__()
+        super(ttm, self).__init__()
         self.memmo = torch.zeros(batch, self.mem_size, dim).cuda()
         self.ttm_unit = ttm_unit()
         self.cls = nn.Linear(dim, 11)
@@ -220,7 +222,7 @@ class ttm_encoder(nn.Module):
         input = self.pre(input)
         b, t, len, c = input.shape
         outs = []
-        if mem == None: # 可以设置下，mem是否持续化，如果不持续化，就是每次都是新的mem
+        if mem == None:  # 可以设置下，mem是否持续化，如果不持续化，就是每次都是新的mem
             self.mem = self.memmo
         else:
             self.mem = mem.detach()

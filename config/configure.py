@@ -30,7 +30,7 @@ class Config:
         else:
             self.__update(self.__config, config)
             
-    def __update(self, config, config_file):
+    def __update(self, config, config_file):#参数是两个字典 源 现字典
         for key in config_file:
             if key in config:
                 if isinstance(config[key], dict):
@@ -58,6 +58,7 @@ if __name__=="__main__":
     config_file = "base.json"
     config_file = os.path.join(os.path.dirname(__file__), config_file)
 
-    x=Config(config_file)
+    Config(config_file)
+    shili=Config.getInstance()
     pass
     pass

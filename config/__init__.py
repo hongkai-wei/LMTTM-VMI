@@ -1,5 +1,5 @@
 import os
-from configure import Config
+from .configure import Config
 
 
 config_file = "base.json"
