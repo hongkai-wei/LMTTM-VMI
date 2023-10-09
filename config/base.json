@@ -1,17 +1,25 @@
 {
 "train":{
-    "name":"basic_test",
+    "name":"basic_test_false_v2",
     "epoch":250,
     "batch_size":32,
     "optimizer":"Adam",
-    "lr":1e-4,
-    "lr_decay":1e-5,
-    "if_mem":"True",
+    "lr":1e-3,
+    "weight_decay":1e-5,
+    "if_mem":"False",
     "save_check_point_only_once":"True",
-    "val_gap":100
+    "val_gap":50
 
 }
 
+,
+"dataset":{
+    "dataset_name":"organmnist3d",
+    "root":"C:\\Users\\BYounng\\Documents\\vscode\\vivit\\data",
+    "spilt":"train",
+    "batch_size":48
+
+}
 
 
 }

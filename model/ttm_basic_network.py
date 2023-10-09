@@ -3,15 +3,18 @@ MODIFY:
 add linear after conv3d
 reduce dim by using linear
 '''
+import sys
+sys.path.append("F:\_TTM\TTM-Pytorch")
+
 import torch
 import torch.nn as nn
 import einops
 from einops import rearrange, reduce, repeat
 from einops.layers.torch import Rearrange
 import torch.nn.init as init
-from tokenLearner_network import TokenLearnerModuleV11
+from model.tokenLearner_network import TokenLearnerModuleV11
 drop_r = 0.0
-process_unit_mode = "mix"
+process_unit_mode = "mlp"
 summay_mode = "token_learner"
 mem_mode = "add_earse"
 in_channels = 1
@@ -111,9 +114,9 @@ class ttm_unit(nn.Module):
         self.memory_mode = summay_mode
         self.use_positional_embedding = positional_use
         self.tokenLearner1 = TokenLearnerModuleV11(
-            in_channels=64, num_tokens=16, num_groups=1)
+            in_channels=512, num_tokens=16, num_groups=1)
         self.tokenLearner2 = TokenLearnerModuleV11(
-            in_channels=64, num_tokens=1024, num_groups=1)
+            in_channels=512, num_tokens=1024, num_groups=1)
         self.transformer_block = nn.TransformerEncoderLayer(
             d_model=dim, nhead=8, dim_feedforward=dim * 3, dropout=0.2)
         self.tokenLearner_mha = tokenLearner_mha()
@@ -218,7 +221,7 @@ class ttm(nn.Module):
             (step//patch_size)*speical_token, out_features=1)
         self.laynorm = nn.LayerNorm(512)
 
-    def forward(self, input, mem=None):
+    def forward(self, input, mem=None):# B C T H W
         input = self.pre(input)
         b, t, len, c = input.shape
         outs = []
@@ -241,4 +244,9 @@ class ttm(nn.Module):
 
 
 if __name__ == "__main__":
-    pass
+    x = torch.randn(32,1,28,28,28).cuda()
+    y = torch.randn(32,1).cuda()
+    model = ttm().cuda()
+    mem = None
+    out, mem = model(x, mem)
+

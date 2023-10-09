@@ -1,7 +1,7 @@
 from torch.utils.tensorboard import SummaryWriter
 import os
 
-log_dir = "../log"
+log_dir = "./log"
 if os.path.exists(log_dir) == False:
     os.mkdir(log_dir)
 
@@ -9,7 +9,7 @@ if os.path.exists(log_dir) == False:
 class logger():
     def __init__(self, name) -> None:
         log_dir_ = os.path.join(log_dir, name)
-        self.writer = SummaryWriter(log_dir=log_dir)
+        self.writer = SummaryWriter(log_dir=log_dir_)
 
     def get(self):
         return self.writer
