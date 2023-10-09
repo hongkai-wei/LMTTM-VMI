@@ -1,7 +1,8 @@
 from config import Config
-
+from .medmnist import MedMNISTDataset
 
 def get_dataset(download=False):
+    
     config = Config.getInstance()["dataset"]
     if config["dataset_name"] == "medmnist":
         from .medmnist import MedMNISTDataset
