@@ -3,7 +3,7 @@ from model.ttm_basic_network import ttm
 from utils.log import logger
 from config import Config
 # from model.ttm_basic_network import ttm
-from module_add_noise_laplace import ttm
+from model.memory_ttm import ttm
 import torch
 import tqdm
 import os
@@ -66,7 +66,7 @@ for _ in epoch_bar:
                 model.eval()
                 val_x = val_x.to("cuda", dtype=torch.float32)
                 val_y = val_y.to("cuda", dtype=torch.long)
-                out, mem_ = model(val_x, mem)
+                out, mem_ = model(val_x)
                 out = torch.argmax(out, dim=1)
                 val_y = val_y.squeeze(1)
                 all = val_y.size(0)

@@ -1,30 +1,30 @@
-'''
-MODIFY:
-add linear after conv3d
-reduce dim by using linear
-'''
+
+from config.configure import Config
+from model.tokenLearner_network import TokenLearnerModuleV11
+import torch.nn.init as init
+from einops.layers.torch import Rearrange
+from einops import rearrange, reduce, repeat
+import einops
+import torch.nn as nn
+import torch
 import sys
 sys.path.append("F:\_TTM\TTM-Pytorch")
 
-import torch
-import torch.nn as nn
-import einops
-from einops import rearrange, reduce, repeat
-from einops.layers.torch import Rearrange
-import torch.nn.init as init
-from model.tokenLearner_network import TokenLearnerModuleV11
-drop_r = 0.0
-process_unit_mode = "mlp"
-summay_mode = "token_learner"
-mem_mode = "add_earse"
-in_channels = 1
-dim = 512
-batch = 32
-step = 28
-in_channels = 1
-patch_size = 4
-speical_num_tokens = 8
-positional_use = False
+configs = Config.getInstance()
+batch = configs["dataset"]["batch_size"]
+config = configs["model"]
+drop_r = config["drop_r"]
+process_unit_mode = config["process_unit_mode"]
+# summay_mode = config["summay_mode"]
+mem_mode = config["mem_mode"]
+in_channels = config["in_channels"]
+dim = config["dim"]
+
+step = config["step"]
+
+patch_size = config["patch_size"]
+speical_num_tokens = config["speical_token"]
+positional_use = config["positional_use"]
 
 
 class pre_procee(nn.Module):  # 输入B,C,STEP,H,W  最终得到B C STEP TOKEN -> B STEP TOKEN C
@@ -109,9 +109,9 @@ class token_add_erase_write(nn.Module):
 class ttm_unit(nn.Module):
     def __init__(self) -> None:
         super(ttm_unit, self).__init__()
-        self.mem_mode = mem_mode
+
         self.process_unit = process_unit_mode
-        self.memory_mode = summay_mode
+        self.memory_mode = mem_mode
         self.use_positional_embedding = positional_use
         self.tokenLearner1 = TokenLearnerModuleV11(
             in_channels=512, num_tokens=16, num_groups=1)
@@ -154,10 +154,12 @@ class ttm_unit(nn.Module):
             # mem_out_tokens的shape是[batch,mem_size+special_num_token,dim]
             all_tokens = all_tokens + posemb_init
 
-        if self.memory_mode == "token_learner" or self.memory_mode == 'token_add_earse_write':
-            all_tokens = self.tokenLearner1(all_tokens)
-        elif self.memory_mode == "tokenLearner_mha":
+        if self.memory_mode == "token_learner" or self.memory_mode == 'token_learner_AddErase':  # 这里其实应该是本来token summary
             all_tokens = self.tokenLearner_mha(all_tokens)
+        elif self.memory_mode == "token_learner_mha":
+            all_tokens = self.tokenLearner_mha(all_tokens)
+        else:
+            exit("memory_mode error")
 
         if self.process_unit == "mix":
             output_tokens = all_tokens
@@ -194,36 +196,44 @@ class ttm_unit(nn.Module):
                 output_tokens = self.transformer_block(output_tokens)
             output_tokens = self.norm(output_tokens)
 
-        mem_out_tokens = torch.cat((mem, step_input, output_tokens), dim=1)
+        mem_output_tokens = torch.cat((mem, step_input, output_tokens), dim=1)
 
-        if self.memory_mode == 'tokenLearner':
-            mem_out_tokens = self.tokenLearner2(mem_out_tokens)
-        elif self.memory_mode == 'tokenLearner_mha':
-            mem_out_tokens = self.tokenLearner_mha(mem_out_tokens)
-        elif self.memory_mode == 'token_add_erase_write':
-            mem_out_tokens = self.token_add_erase_write(mem, output_tokens)
+        if self.use_positional_embedding:
+            mem_output_tokens = mem_output_tokens.cuda()
+            posemb_init = torch.nn.Parameter(torch.empty(
+                1, mem_output_tokens.size(1), mem_output_tokens.size(2))).cuda()
+            init.normal_(posemb_init, std=0.02)
+            # mem_out_tokens的shape是[batch,mem_size+special_num_token,dim]
+            mem_output_tokens = mem_output_tokens + posemb_init
 
-        return (mem_out_tokens, output_tokens)
+        if self.memory_mode == 'token_learner':
+            mem_output_tokens = self.tokenLearner2(mem_output_tokens)
+        elif self.memory_mode == 'token_learner_mha':
+            mem_output_tokens = self.tokenLearner_mha(mem_output_tokens)
+        elif self.memory_mode == 'token_learner_AddErase':
+            mem_output_tokens = self.token_add_erase_write(mem, output_tokens)#  48, 128, 512]     [48, 185, 512])
+
+        return (mem_output_tokens, output_tokens)
 
 
 class ttm(nn.Module):
     def __init__(self) -> None:
-        self.mem_size = 128
-        step = 28
-        speical_token = 8
+        self.mem_size = config["mem_size"]
+        step = config["step"]
+        speical_token = config["speical_token"]
         super(ttm, self).__init__()
         self.memmo = torch.zeros(batch, self.mem_size, dim).cuda()
         self.ttm_unit = ttm_unit()
-        self.cls = nn.Linear(dim, 11)
+        self.cls = nn.Linear(dim, config["out_channale"])
         self.pre = pre_procee()
         self.relu = nn.ReLU()
         self.linear_1 = nn.Linear(
             (step//patch_size)*speical_token, out_features=1)
         self.laynorm = nn.LayerNorm(512)
 
-    def forward(self, input, mem=None):# B C T H W
+    def forward(self, input, mem=None):  # B C T H W
         input = self.pre(input)
-        b, t, len, c = input.shape
+        b, t, len, c = input.shape  # B STEP TOKEN C
         outs = []
         if mem == None:  # 可以设置下，mem是否持续化，如果不持续化，就是每次都是新的mem
             self.mem = self.memmo
@@ -244,9 +254,8 @@ class ttm(nn.Module):
 
 
 if __name__ == "__main__":
-    x = torch.randn(32,1,28,28,28).cuda()
-    y = torch.randn(32,1).cuda()
+    x = torch.randn(32, 1, 28, 28, 28).cuda()
+    y = torch.randn(32, 1).cuda()
     model = ttm().cuda()
     mem = None
     out, mem = model(x, mem)
-

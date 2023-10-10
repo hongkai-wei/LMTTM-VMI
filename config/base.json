@@ -1,14 +1,14 @@
 {
 "train":{
-    "name":"basic_test_false_v2",
+    "name":"lapalce_noise_ttm",
     "epoch":250,
-    "batch_size":32,
     "optimizer":"Adam",
-    "lr":1e-3,
+    "lr":1e-4,
     "weight_decay":1e-5,
     "if_mem":"False",
     "save_check_point_only_once":"True",
     "val_gap":50
+    
 
 }
 
@@ -20,6 +20,22 @@
     "batch_size":48
 
 }
-
+,
+"model":{
+    "drop_r":0.2,
+    "process_unit_mode":"mix",
+    "aboev_that_u_can_chose":"mlp,mix",
+    "mem_mode":"token_learner_AddErase",
+    "above_that_u_can_chose2":"token_add_erase_write",
+    "summay_mode":"token_learner",
+    "in_channels":1,
+    "dim":512,
+    "mem_size":128,
+    "speical_token":8,
+    "step":28,
+    "out_channale":111,
+    "patch_size":4,
+    "positional_use":false
+}
 
 }
