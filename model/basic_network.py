@@ -211,7 +211,8 @@ class ttm_unit(nn.Module):
         elif self.memory_mode == 'token_learner_mha':
             mem_output_tokens = self.tokenLearner_mha(mem_output_tokens)
         elif self.memory_mode == 'token_learner_AddErase':
-            mem_output_tokens = self.token_add_erase_write(mem, output_tokens)#  48, 128, 512]     [48, 185, 512])
+            # 48, 128, 512]     [48, 185, 512])
+            mem_output_tokens = self.token_add_erase_write(mem, output_tokens)
 
         return (mem_output_tokens, output_tokens)
 
