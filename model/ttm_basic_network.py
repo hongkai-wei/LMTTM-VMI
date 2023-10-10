@@ -4,16 +4,21 @@ from einops import rearrange, reduce, repeat
 from einops.layers.torch import Rearrange
 import torch.nn.init as init
 from .tokenLearner_network import TokenLearnerModuleV11
-drop_r = 0.2
-process_unit_mode = "mixer"
-summarize_mode = "TL"
-dim = 16
-batch_size = 100
-step = 28
-in_channels = 1
-patch_size = 3
-num_tokens = 8
-use_positional_embedding = True
+from config.configure import Config
+
+config = Config.getInstance()
+batch_size = config["batch_size"]
+config = config["model"]
+drop_r = config["drop_r"]
+process_unit_mode = config["process_unit_mode"]
+summarize_mode = config["summarize_mode"]
+in_channels = config["in_channels"]
+dim = config["dim"]
+memory_tokens_size = config["memory_tokens_size"]
+step = config["step"]
+patch_size = config["patch_size"]
+num_tokens = config["num_tokens"]
+use_positional_embedding = config["use_positional_embedding"]
 
 
 class PreProcess(nn.Module):  # 输入B,C,STEP,H,W  最终得到B C STEP TOKEN -> B STEP TOKEN C
@@ -109,8 +114,8 @@ class TokenTuringMachineUnit(nn.Module):
         self.process_unit_mode = process_unit_mode
         self.summarize_mode = summarize_mode
         self.use_positional_embedding = use_positional_embedding
-        self.tokenLearner1 = TokenLearnerModuleV11(in_channels=16, num_tokens=8, num_groups=1)
-        self.tokenLearner2 = TokenLearnerModuleV11(in_channels=16, num_tokens=128, num_groups=1)
+        self.tokenLearner1 = TokenLearnerModuleV11(in_channels=dim, num_tokens=num_tokens, num_groups=1)
+        self.tokenLearner2 = TokenLearnerModuleV11(in_channels=dim, num_tokens=memory_tokens_size, num_groups=1)
         self.transformerBlock = nn.TransformerEncoderLayer(d_model=dim, nhead=8, dim_feedforward=dim * 3, dropout=0.2)
         self.tokenLearnerMHA = TokenLearnerMHA()
         self.tokenAddEraseWrite = TokenAddEraseWrite()
@@ -196,11 +201,11 @@ class TokenTuringMachineUnit(nn.Module):
 
 class TokenTuringMachineEncoder(nn.Module):
     def __init__(self) -> None:
-        self.memory_tokens_size = 128
+        self.memory_tokens_size = memory_tokens_size
         super(TokenTuringMachineEncoder, self).__init__()
         self.memory_tokens = torch.zeros(batch_size, self.memory_tokens_size, dim).cuda()
         self.tokenTuringMachineUnit = TokenTuringMachineUnit()
-        self.cls = nn.Linear(dim, 11)
+        self.cls = nn.Linear(dim, config["out_class_num"])
         self.pre = PreProcess()
         self.relu = nn.ReLU()
 
