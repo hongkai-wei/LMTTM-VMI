@@ -9,28 +9,27 @@ import tqdm
 
 config = Config.getInstance()
 batch_size = config["batch_size"]
-config = Config.getInstance()["test"]
-log_writer = logger(config["name"])
+log_writer = logger(config["test"]["name"])
 log_writer = log_writer.get()
+
+name = config["train"]["name"]
 
 data_test = get_iter("test")
 
 pth = ".\\check_point\\"
-pth_files = [f"{pth}loss_{i * 100}.pth" for i in range(1, 480)] 
+pth_files = [f"{pth}{name}_epoch_{i}.pth" for i in range(1, 10)] 
 
 for i in range(len(pth_files)):
     checkpoint = torch.load(pth_files[i])
     load_state = checkpoint["model"]
-    load_mem = checkpoint["memory"]
+    load_memory_tokens = checkpoint["memory_tokens"]
     model = TokenTuringMachineEncoder().cuda()
     model.load_state_dict(load_state)
-    model.eval()
 
     all_y = 0
     all_real = 0
 
     for x,y in tqdm.tqdm(data_test):
-        model.test()  
         x = x.to("cuda", dtype = torch.float32)
         y = y.to("cuda", dtype = torch.long)
         out, mem = model(x)

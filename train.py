@@ -31,6 +31,11 @@ citizer = torch.nn.CrossEntropyLoss()
 epoch_bar = tqdm.tqdm(range(config["epoch"]))
 train_nums = 0
 val_acc_nums = 0
+acc = 0
+save_loss = []
+convergence_batch = -1
+convergence_flag = -1
+
 for _ in epoch_bar:
     epoch_bar.set_description(
         f"train epoch is {format(_+1)} of {config['epoch']}")
@@ -51,11 +56,22 @@ for _ in epoch_bar:
         optimizer.step()
         optimizer.zero_grad()
         losses.append(loss.item())
-        bar.set_postfix(loss=loss.item())
+        bar.set_postfix(loss=loss.item(), accurancy=acc)
         log_writer.add_scalar("loss per step", loss.item(), train_nums)
+
         if train_nums % config["val_gap"] == 0:
             avg_loss = sum(losses)/len(losses)
+            if avg_loss < 0.01 and convergence_flag == -1:
+                convergence_batch = (train_nums * config["batch_size"])
+                convergence_flag = 1
+
             log_writer.add_scalar("loss per 100 step", avg_loss, train_nums)
+            # min_loss = 0.1
+            # if avg_loss < min_loss:
+            #     min_loss = avg_loss
+            #     torch.save({"model": model.state_dict(), "memory_tokens": memory_tokens},
+            #                f"../check_point/{config['name']}.pth")
+            losses = []
             for val_x, val_y in data_val:
                 model.eval()
                 val_x = val_x.to("cuda", dtype=torch.float32)
@@ -68,3 +84,16 @@ for _ in epoch_bar:
                 acc = (result/all)*100
                 log_writer.add_scalar("acc", acc, val_acc_nums)
                 val_acc_nums += 1
+        # 保存后面50个epoch的模型
+    if _ > 0:
+        save_name = f"./check_point/{config['name']}_epoch_{_}.pth"
+        torch.save({"model": model.state_dict(), "memory_tokens": memory_tokens},
+                   save_name)
+
+    if _ > (config["epoch"]-50):
+        save_loss.append(avg_loss)
+
+
+print(
+    f"train complete and last 50 epoch 's avg loss is {sum(save_loss)/(len(save_loss))},and convergence batch is {convergence_batch}")
+log_writer.close()
