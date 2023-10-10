@@ -1,10 +1,10 @@
 from config import Config
 
 
-def get_dataset(spilt):
+def get_dataset(split):
 
-    config = Config.getInstance()["dataset"]
+    config = Config.getInstance()
     if config["dataset_name"] == "organmnist3d":
-        from ._medmnist import MedMNISTDataset
-        return MedMNISTDataset(spilt=spilt)
+        from .medmnist import MedMNISTDataset
+        return MedMNISTDataset(split=split)
     # elif config["dataset_name"]

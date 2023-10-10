@@ -1,41 +1,30 @@
 {
-"train":{
-    "name":"lapalce_noise_ttm",
-    "epoch":250,
-    "optimizer":"Adam",
-    "lr":1e-4,
-    "weight_decay":1e-5,
-    "if_mem":"False",
-    "save_check_point_only_once":"True",
-    "val_gap":50
-    
-
-}
-
-,
-"dataset":{
+    "batch_size":100,
     "dataset_name":"organmnist3d",
-    "root":"C:\\Users\\BYounng\\Documents\\vscode\\vivit\\data",
-    "spilt":"train",
-    "batch_size":48
-
-}
-,
-"model":{
-    "drop_r":0.2,
-    "process_unit_mode":"mix",
-    "aboev_that_u_can_chose":"mlp,mix",
-    "mem_mode":"token_learner_AddErase",
-    "above_that_u_can_chose2":"token_add_erase_write",
-    "summay_mode":"token_learner",
-    "in_channels":1,
-    "dim":512,
-    "mem_size":128,
-    "speical_token":8,
-    "step":28,
-    "out_channale":111,
-    "patch_size":4,
-    "positional_use":false
-}
-
+    "root":"./data/medmnist",
+    "train":{
+        "name":"lapalce_noise_ttm",
+        "epoch":250,
+        "optimizer":"Adam",
+        "lr":1e-3,
+        "weight_decay":1e-4,
+        "load_memory_tokens":"False",
+        "save_check_point_only_once":"True",
+        "val_gap":50
+    },
+    "model":{
+        "drop_r":0.2,
+        "process_unit_mode":"mixer",
+        "other_process_unit_mode":"mlp,transformer",
+        "summarize_mode":"TL",
+        "other_summarize_mode":"TL-AddErase,TL-MHA",
+        "in_channels":1,
+        "dim":16,
+        "memory_tokens_size":128,
+        "num_tokens":8,
+        "step":28,
+        "out_class_num":11,
+        "patch_size":4,
+        "use_positional_embedding":"True"
+    }
 }
