@@ -1,10 +1,10 @@
 from config import Config
-from .medmnist import MedMNISTDataset
 
-def get_dataset(download=False):
-    
-    config = Config.getInstance()["dataset"]
-    if config["dataset_name"] == "medmnist":
+
+def get_dataset(split):
+
+    config = Config.getInstance()
+    if config["dataset_name"] == "organmnist3d":
         from .medmnist import MedMNISTDataset
-        return MedMNISTDataset(config["dataset_name"], config["data_root"], config["split"], download=download)
+        return MedMNISTDataset(split=split)
     # elif config["dataset_name"]
