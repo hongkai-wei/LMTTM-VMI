@@ -9,7 +9,6 @@ import os
 config = Config.getInstance()["train"]
 log_writer = logger(config["name"])
 log_writer = log_writer.get()
-log_writer.add_scalar("lr", 1, 0)
 if os.path.exists("./check_point"):
     pass
 else:
@@ -57,10 +56,6 @@ for _ in epoch_bar:
         if train_nums % config["val_gap"] == 0:
             avg_loss = sum(losses)/len(losses)
             log_writer.add_scalar("loss per 100 step", avg_loss, train_nums)
-            # if configs["save_check_point_only_once"] == "True":
-            #     if avg_loss <= 0.042:
-            #         torch.save({"model": model.state_dict(), "mem": mem},
-            #                    f"../check_point/{configs['name']}.pth  ")
             for val_x, val_y in data_val:
                 model.eval()
                 val_x = val_x.to("cuda", dtype=torch.float32)
@@ -71,6 +66,5 @@ for _ in epoch_bar:
                 all = val_y.size(0)
                 result = (out == val_y).sum().item()
                 acc = (result/all)*100
-                print(acc)
                 log_writer.add_scalar("acc", acc, val_acc_nums)
                 val_acc_nums += 1
