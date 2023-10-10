@@ -85,7 +85,7 @@ for _ in epoch_bar:
                 log_writer.add_scalar("acc", acc, val_acc_nums)
                 val_acc_nums += 1
         # 保存后面50个epoch的模型
-    if _ > 0:
+    if _ > (config["epoch"]-50):
         save_name = f"./check_point/{config['name']}_epoch_{_}.pth"
         torch.save({"model": model.state_dict(), "memory_tokens": memory_tokens},
                    save_name)
