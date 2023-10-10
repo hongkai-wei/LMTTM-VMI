@@ -1,5 +1,5 @@
 from utils.get_data_iter import get_iter
-from model.ttm_basic_network import ttm
+from model.basic_network import ttm
 from utils.log import logger
 from config import Config
 # from model.ttm_basic_network import ttm
