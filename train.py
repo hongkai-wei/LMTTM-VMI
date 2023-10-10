@@ -16,7 +16,6 @@ else:
 
 data_train = get_iter("train")  # $ train val test
 data_val = get_iter("val")
-data_test = get_iter("test")
 
 memory_tokens = None
 model = TokenTuringMachineEncoder().cuda()
