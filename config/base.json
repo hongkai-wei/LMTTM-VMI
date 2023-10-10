@@ -1,17 +1,15 @@
 {
-"train":{
-    "name":"basic_test",
-    "epoch":250,
-    "batch_size":32,
-    "optimizer":"Adam",
-    "lr":1e-4,
-    "lr_decay":1e-5,
-    "if_mem":"True",
-    "save_check_point_only_once":"True",
-    "val_gap":100
-
-}
-
-
-
+    "batch_size":100,
+    "train":{
+        "name":"basic_test",
+        "epoch":250,
+        "optimizer":"Adam",
+        "lr":1e-3,
+        "weight_decay":1e-4,
+        "if_mem":"True",
+        "save_check_point_only_once":"True",
+        "val_gap":100
+    },
+    "dataset_name":"organmnist3d",
+    "root":"./data/medmnist"
 }
