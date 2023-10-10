@@ -24,11 +24,13 @@ use_positional_embedding = config["use_positional_embedding"]
 class PreProcess(nn.Module):  # 输入B,C,STEP,H,W  最终得到B C STEP TOKEN -> B STEP TOKEN C
     def __init__(self) -> None:
         super(PreProcess, self).__init__()
+
         self.conv = nn.Conv3d(in_channels=in_channels, 
                              out_channels=dim,
                              kernel_size=patch_size, 
                              stride=patch_size, 
                              padding="valid")
+
         self.relu = nn.ReLU()
 
     def forward(self, input):
@@ -40,11 +42,13 @@ class PreProcess(nn.Module):  # 输入B,C,STEP,H,W  最终得到B C STEP TOKEN -
 
         return x
 
+
 class TokenLearnerMHA(nn.Module):
     def __init__(self) -> None:
         super(TokenLearnerMHA, self).__init__()
         self.query = nn.Parameter(torch.randn(batch_size, num_tokens, dim).cuda())
         self.attn = nn.MultiheadAttention(embed_dim=dim, num_heads=8, dropout=0.1, batch_first=True)
+
 
     def forward(self, input):
         # [0]是结果，[1]是权重  B STEP 8 C
@@ -56,6 +60,7 @@ class TokenAddEraseWrite(nn.Module):
     def __init__(self) -> None:
         super(TokenAddEraseWrite, self).__init__()
         num_tokens = 8
+
         self.trasns_bolck1 = nn.Sequential(nn.LayerNorm(dim), 
                                            nn.Linear(dim, 3*dim), 
                                            nn.Linear(3*dim, num_tokens), 
@@ -75,6 +80,7 @@ class TokenAddEraseWrite(nn.Module):
                                             nn.GELU())
         self.softmax = nn.Softmax(dim = -1)
 
+
     def forward(self, memory_tokens, control_inputs):
         selected = self.trasns_bolck1(memory_tokens)
         selected = selected.transpose(1, 2)
@@ -93,9 +99,11 @@ class TokenAddEraseWrite(nn.Module):
         output = memory_tokens * wet
 
         at = self.laynorm(control_inputs)
+
         at = at.transpose(1,2)
         at = self.trasns_bolck3(at)
         at = at.transpose(1,2)
+
         at = self.trasns_bolck3_(at)
 
         wat = selected.unsqueeze(-1).cuda() * at.unsqueeze(2).cuda()
@@ -113,6 +121,7 @@ class TokenTuringMachineUnit(nn.Module):
         self.process_unit_mode = process_unit_mode
         self.summarize_mode = summarize_mode
         self.use_positional_embedding = use_positional_embedding
+
         self.tokenLearner1 = TokenLearnerModuleV11(in_channels=dim, num_tokens=num_tokens, num_groups=1)
         self.tokenLearner2 = TokenLearnerModuleV11(in_channels=dim, num_tokens=memory_tokens_size, num_groups=1)
         self.transformerBlock = nn.TransformerEncoderLayer(d_model=dim, nhead=8, dim_feedforward=dim * 3, dropout=0.2)
@@ -125,6 +134,7 @@ class TokenTuringMachineUnit(nn.Module):
                                  nn.Linear(dim*3, dim),
                                  nn.GELU(),
                                  nn.Dropout(drop_r))
+
         self.num_layers = 3
         self.norm = nn.LayerNorm(dim)
         self.mixer_sequence_block = nn.Sequential(nn.Linear(num_tokens, num_tokens * 6),
@@ -151,9 +161,11 @@ class TokenTuringMachineUnit(nn.Module):
             all_tokens = all_tokens + posemb_init
 
         if self.summarize_mode == 'TL' or self.summarize_mode == 'TL-AddErase':
+
             all_tokens=self.tokenLearner1(all_tokens)
         elif self.summarize_mode == 'TL-MHA':
             all_tokens=self.tokenLearnerMHA(all_tokens)
+
 
         if self.process_unit_mode == 'transformer':
             output_tokens = all_tokens
@@ -161,24 +173,27 @@ class TokenTuringMachineUnit(nn.Module):
                 output_tokens = self.transformerBlock(output_tokens)
 
         elif self.process_unit_mode == 'mixer':
+
             output_tokens = all_tokens # all_tokens的shape是[batch,mem_size+special_num_token,dim]
+
             for _ in range(self.num_layers):
                 # Token mixing，不同token互通
                 x_output_tokens = output_tokens
                 x_output_tokens = self.norm(x_output_tokens)
+
                 x_output_tokens = x_output_tokens.permute(0, 2, 1) # permute是将输入张量的维度换位，output_tokens的shape是[batch,dim,mem_size+special_num_token]
                 x_output_tokens = self.mixer_sequence_block(x_output_tokens) # mixer_block是一个全连接层，输入是dim维，输出是dim维
                 x_output_tokens = x_output_tokens.permute(0, 2, 1) # output_tokens的shape是[batch,mem_size+special_num_token,dim]
                 x_output_tokens = x_output_tokens + output_tokens # output_tokens的shape是[batch,mem_size+special_num_token,dim]
                 x_output_tokens = self.dropout(x_output_tokens)
-
+                
                 # Channel mixing，token内部互通
                 y_output_tokens = self.norm(x_output_tokens)
                 y_output_tokens = self.mixer_channels__block(y_output_tokens)
                 y_output_tokens = self.dropout(y_output_tokens)
                 output_tokens = output_tokens + y_output_tokens
             output_tokens = self.norm(output_tokens)
-        
+
         elif self.process_unit_mode == 'mlp':
             output_tokens = all_tokens
             for _ in range(self.num_layers):
@@ -186,7 +201,9 @@ class TokenTuringMachineUnit(nn.Module):
                 output_tokens = self.mlpBlock(output_tokens)
             output_tokens = self.norm(output_tokens)
 
+
         memory_input_tokens = torch.cat((memory_tokens, input_tokens, output_tokens), dim=1)
+
 
         if self.summarize_mode == 'TL':
             memory_output_tokens = self.tokenLearner2(memory_input_tokens)
@@ -198,11 +215,14 @@ class TokenTuringMachineUnit(nn.Module):
         return (memory_output_tokens,output_tokens)
 
 
+
 class TokenTuringMachineEncoder(nn.Module):
     def __init__(self) -> None:
         self.memory_tokens_size = memory_tokens_size
         super(TokenTuringMachineEncoder, self).__init__()
+
         self.memory_tokens = torch.zeros(batch_size, self.memory_tokens_size, dim).cuda()
+
         self.tokenTuringMachineUnit = TokenTuringMachineUnit()
         self.cls = nn.Linear(dim, config["out_class_num"])
         self.pre = PreProcess()
@@ -212,6 +232,7 @@ class TokenTuringMachineEncoder(nn.Module):
         input = self.pre(input)
         b, t, _, c = input.shape
         # b, t, c, _, _ = input.shape # b是batch，t是step，_是token_num，c是dim
+
         outs=[]
         if memory_tokens == None:
             memory_tokens = torch.zeros(b,self.memory_tokens_size,c).cuda() #  c, h, w
@@ -230,6 +251,7 @@ class TokenTuringMachineEncoder(nn.Module):
         # print(out.shape)
 
         return self.cls(out), memory_tokens # 原来是正常的out和 memory_tokens
+
 
 # if __name__ == "__main__":
 #     inputs = torch.randn(batch_size, step, 1, 28, 28).cuda() # [bs, step, c, h, w]
