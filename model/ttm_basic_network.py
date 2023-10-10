@@ -40,7 +40,6 @@ class PreProcess(nn.Module):  # 输入B,C,STEP,H,W  最终得到B C STEP TOKEN -
 
         return x
 
-
 class TokenLearnerMHA(nn.Module):
     def __init__(self) -> None:
         super(TokenLearnerMHA, self).__init__()
