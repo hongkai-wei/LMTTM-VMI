@@ -102,15 +102,15 @@ final_save_loss = sum(save_loss)/(len(save_loss))
 final_save_loss = round(final_save_loss, 2)
 print(f"train loss is {final_save_loss},and convergence batch is {convergence_batch}")
 
-if os.path.exists("./experiments"):
+if os.path.exists("./experiment"):
     pass
 else:
-    os.mkdir("./experiments")
+    os.mkdir("./experiment")
 
-experiments_path = "./experiments/experiments_record.txt"
+experiment_path = "./experiment/experiment_record.txt"
 
 # 打开文件，以追加模式写入数据
-with open(experiments_path, "a") as file:
+with open(experiment_path, "a") as file:
     # 将print的数据重定向到文件中
     print(f"{name} convergence_batch: {convergence_batch} , train_loss: {final_save_loss}", file=file)
 

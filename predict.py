@@ -60,15 +60,15 @@ test_acc = round(test_acc, 1)
 
 print("test acc is {}%".format(test_acc))
 
-if os.path.exists("./experiments"):
+if os.path.exists("./experiment"):
     pass
 else:
-    os.mkdir("./experiments")
+    os.mkdir("./experiment")
 
-experiments_path = "./experiments/experiments_record.txt"
+experiment_path = "./experiment/experiment_record.txt"
 
 # 打开文件，以追加模式写入数据
-with open(experiments_path, "a") as file:
+with open(experiment_path, "a") as file:
     # 将print的数据重定向到文件中
     print(f"{name} test_acc: {test_acc}%", file=file)
     print(" ", file=file)
