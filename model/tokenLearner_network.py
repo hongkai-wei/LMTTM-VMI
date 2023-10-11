@@ -6,7 +6,7 @@ import torch.nn.functional as F
 class TokenLearner(nn.Module):
     """TokenLearner module.
 
-    This is the module used for the experiments in the paper.
+    This is the module used for the experiment in the paper.
 
     Attributes:
       num_tokens: Number of tokens.

@@ -1,7 +1,7 @@
 {
-    "batch_size":100,
+    "batch_size":96,
     "dataset_name":"organmnist3d",
-    "root":"./data/medmnist",
+    "root":"./datasets_data/medmnist",
     "model":{
         "drop_r":0.2,
         "process_unit_mode":"mixer",
@@ -9,26 +9,21 @@
         "summarize_mode":"TL",
         "other_summarize_mode":"TL-AddErase,TL-MHA",
         "in_channels":1,
-        "dim":16,
-        "memory_tokens_size":128,
+        "dim":32,
+        "memory_tokens_size":96,
         "num_tokens":8,
         "step":28,
         "out_class_num":11,
-        "patch_size":4,
-        "use_positional_embedding":"True"
+        "patch_size":3,
+        "use_positional_embedding":"False"
     },
     "train":{
-        "name":"lapalce_noise_ttm",
-        "epoch":250,
+        "name":"t9_organmnist3d_TL_mixer_memory96_tokens8",
+        "epoch":500,
         "optimizer":"Adam",
         "lr":1e-3,
-        "weight_decay":1e-4,
+        "weight_decay":1e-3,
         "load_memory_tokens":"False",
-        "save_check_point_only_once":"True",
-        "val_gap":50
-    },
-    "test":{
-        "name":"lapalce_noise_ttm_test"
-        
+        "val_gap":100
     }
 }
