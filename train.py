@@ -6,13 +6,23 @@ import torch
 import tqdm
 import os
 
-config = Config.getInstance()["train"]
-log_writer = logger(config["name"])
+config = Config.getInstance()
+batch_size = config["batch_size"]
+config = config["train"]
+name = config["name"]
+log_writer = logger(config["name"] + "_train")
 log_writer = log_writer.get()
+
 if os.path.exists("./check_point"):
     pass
 else:
     os.mkdir("./check_point")
+
+checkpoint_path = f"./check_point/{config['name']}"
+if os.path.exists(checkpoint_path):
+    pass
+else:
+    os.mkdir(checkpoint_path)
 
 data_train = get_iter("train")  # $ train val test
 data_val = get_iter("val")
@@ -30,10 +40,11 @@ citizer = torch.nn.CrossEntropyLoss()
 epoch_bar = tqdm.tqdm(range(config["epoch"]))
 train_nums = 0
 val_acc_nums = 0
-acc = 0
+val_acc = 0
 save_loss = []
 convergence_batch = -1
 convergence_flag = -1
+avg_loss = 0
 
 for _ in epoch_bar:
     epoch_bar.set_description(
@@ -55,22 +66,18 @@ for _ in epoch_bar:
         optimizer.step()
         optimizer.zero_grad()
         losses.append(loss.item())
-        bar.set_postfix(loss=loss.item(), accurancy=acc)
+        bar.set_postfix(loss=loss.item(), val_acc=val_acc)
         log_writer.add_scalar("loss per step", loss.item(), train_nums)
 
         if train_nums % config["val_gap"] == 0:
             avg_loss = sum(losses)/len(losses)
-            if avg_loss < 0.01 and convergence_flag == -1:
-                convergence_batch = (train_nums * config["batch_size"])
+            if avg_loss <= 0.2 and convergence_flag == -1:
+                convergence_batch = (train_nums * batch_size)
                 convergence_flag = 1
-
+            
             log_writer.add_scalar("loss per 100 step", avg_loss, train_nums)
-            # min_loss = 0.1
-            # if avg_loss < min_loss:
-            #     min_loss = avg_loss
-            #     torch.save({"model": model.state_dict(), "memory_tokens": memory_tokens},
-            #                f"../check_point/{config['name']}.pth")
             losses = []
+
             for val_x, val_y in data_val:
                 model.eval()
                 val_x = val_x.to("cuda", dtype=torch.float32)
@@ -80,19 +87,31 @@ for _ in epoch_bar:
                 val_y = val_y.squeeze(1)
                 all = val_y.size(0)
                 result = (out == val_y).sum().item()
-                acc = (result/all)*100
-                log_writer.add_scalar("acc", acc, val_acc_nums)
+                val_acc = (result/all)*100
+                log_writer.add_scalar("val acc", val_acc, val_acc_nums)
                 val_acc_nums += 1
         # 保存后面50个epoch的模型
-    if _ > (config["epoch"]-50):
-        save_name = f"./check_point/{config['name']}_epoch_{_}.pth"
-        torch.save({"model": model.state_dict(), "memory_tokens": memory_tokens},
-                   save_name)
+    if _ >= (config["epoch"]-50):
+        save_name = f"./check_point/{config['name']}/{config['name']}_epoch_{_ -config['epoch'] + 51}.pth"
+        torch.save({"model": model.state_dict(), "memory_tokens": memory_tokens}, save_name)
 
-    if _ > (config["epoch"]-50):
+    if _ >= (config["epoch"]-50):
         save_loss.append(avg_loss)
 
+final_save_loss = sum(save_loss)/(len(save_loss))
+final_save_loss = round(final_save_loss, 2)
+print(f"train loss is {final_save_loss},and convergence batch is {convergence_batch}")
 
-print(
-    f"train complete and last 50 epoch 's avg loss is {sum(save_loss)/(len(save_loss))},and convergence batch is {convergence_batch}")
+if os.path.exists("./experiments"):
+    pass
+else:
+    os.mkdir("./experiments")
+
+experiments_path = "./experiments/experiments_record.txt"
+
+# 打开文件，以追加模式写入数据
+with open(experiments_path, "a") as file:
+    # 将print的数据重定向到文件中
+    print(f"{name} convergence_batch: {convergence_batch} , train_loss: {final_save_loss}", file=file)
+
 log_writer.close()

@@ -6,18 +6,23 @@ from utils.get_data_iter import get_iter
 from einops.layers.torch import Rearrange
 import torch
 import tqdm
+import os
 
 config = Config.getInstance()
 batch_size = config["batch_size"]
-log_writer = logger(config["test"]["name"])
+
+config = config["train"]
+log_writer = logger(config["name"] + "_test")
 log_writer = log_writer.get()
 
-name = config["train"]["name"]
+name = config["name"]
 
 data_test = get_iter("test")
 
-pth = ".\\check_point\\"
-pth_files = [f"{pth}{name}_epoch_{i}.pth" for i in range(1, 10)] 
+pth = f".\\check_point\\{name}\\"
+pth_files = [f"{pth}{name}_epoch_{i}.pth" for i in range(1, 51)] 
+
+avg_acc = 0
 
 for i in range(len(pth_files)):
     checkpoint = torch.load(pth_files[i])
@@ -32,8 +37,8 @@ for i in range(len(pth_files)):
     for x,y in tqdm.tqdm(data_test):
         x = x.to("cuda", dtype = torch.float32)
         y = y.to("cuda", dtype = torch.long)
-        out, mem = model(x)
-        # out, mem = model(x, load_mem)
+        out, memory_tokens = model(x)
+        # out, mem = model(x, load_memory_tokens)
         out = torch.argmax(out, dim=1)
         y = y.squeeze(1)
         all = y.size(0)
@@ -47,3 +52,25 @@ for i in range(len(pth_files)):
         print("acc is {}%".format((all_real/all_y)*100))
         acc = (all_real/all_y)*100
         log_writer.add_scalar("acc per 100 step ", acc, i)
+        
+    avg_acc += acc
+
+test_acc = avg_acc/(i+1)
+test_acc = round(test_acc, 1)
+
+print("test acc is {}%".format(test_acc))
+
+if os.path.exists("./experiments"):
+    pass
+else:
+    os.mkdir("./experiments")
+
+experiments_path = "./experiments/experiments_record.txt"
+
+# 打开文件，以追加模式写入数据
+with open(experiments_path, "a") as file:
+    # 将print的数据重定向到文件中
+    print(f"{name} test_acc: {test_acc}%", file=file)
+    print(" ", file=file)
+
+log_writer.close()

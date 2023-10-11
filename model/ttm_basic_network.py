@@ -55,7 +55,6 @@ class TokenLearnerMHA(nn.Module):
 class TokenAddEraseWrite(nn.Module):
     def __init__(self) -> None:
         super(TokenAddEraseWrite, self).__init__()
-        num_tokens = 8
         self.trasns_bolck1 = nn.Sequential(nn.LayerNorm(dim), 
                                            nn.Linear(dim, 3*dim), 
                                            nn.Linear(3*dim, num_tokens), 
