@@ -29,6 +29,7 @@ data_val = get_iter("val")
 
 memory_tokens = None
 model = TokenTuringMachineEncoder().cuda()
+
 if config["optimizer"] == "RMSprop":
     optimizer = torch.optim.RMSprop(
         model.parameters(), lr=config["lr"], weight_decay=config["weight_decay"])
@@ -60,7 +61,7 @@ for _ in epoch_bar:
         if (config["load_memory_tokens"] == "True"):
             output, memory_tokens = model(input, memory_tokens)
         else:
-            output, memory_tokens = model(input)
+            output, memory_tokens = model(input, memory_tokens = None)
         train_nums += 1
         loss = citizer(output, target)
         loss.backward()

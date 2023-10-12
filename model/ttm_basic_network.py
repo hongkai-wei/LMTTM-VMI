@@ -10,15 +10,16 @@ config = Config.getInstance()
 batch_size = config["batch_size"]
 config = config["model"]
 drop_r = config["drop_r"]
-process_unit_mode = config["process_unit_mode"]
-summarize_mode = config["summarize_mode"]
+process_unit = config["process_unit"]
+memory_mode = config["memory_mode"]
 in_channels = config["in_channels"]
 dim = config["dim"]
 memory_tokens_size = config["memory_tokens_size"]
 step = config["step"]
 patch_size = config["patch_size"]
 num_tokens = config["num_tokens"]
-use_positional_embedding = config["use_positional_embedding"]
+Read_use_positional_embedding = config["Read_use_positional_embedding"]
+Write_use_positional_embedding = config["Write_use_positional_embedding"]
 
 
 class PreProcess(nn.Module):  # 输入B,C,STEP,H,W  最终得到B C STEP TOKEN -> B STEP TOKEN C
@@ -117,9 +118,11 @@ class TokenAddEraseWrite(nn.Module):
 class TokenTuringMachineUnit(nn.Module):
     def __init__(self) -> None:
         super(TokenTuringMachineUnit, self).__init__()
-        self.process_unit_mode = process_unit_mode
-        self.summarize_mode = summarize_mode
-        self.use_positional_embedding = use_positional_embedding
+
+        self.process_unit = process_unit
+        self.memory_mode = memory_mode
+        self.Read_use_positional_embedding = Read_use_positional_embedding
+        self.Write_use_positional_embedding = Write_use_positional_embedding
 
         self.tokenLearner1 = TokenLearnerModuleV11(in_channels=dim, num_tokens=num_tokens, num_groups=1)
         self.tokenLearner2 = TokenLearnerModuleV11(in_channels=dim, num_tokens=memory_tokens_size, num_groups=1)
@@ -150,8 +153,8 @@ class TokenTuringMachineUnit(nn.Module):
 
     def forward(self, input_tokens, memory_tokens):
         all_tokens = torch.cat((memory_tokens, input_tokens), dim=1)
-        # add posiutional
-        if self.use_positional_embedding:
+        # Read add posiutional
+        if self.Read_use_positional_embedding:
             all_tokens = all_tokens.cuda()
             posemb_init = torch.nn.Parameter(torch.empty(
                 1, all_tokens.size(1), all_tokens.size(2))).cuda()
@@ -159,19 +162,22 @@ class TokenTuringMachineUnit(nn.Module):
             # mem_out_tokens的shape是[batch,mem_size+special_num_token,dim]
             all_tokens = all_tokens + posemb_init
 
-        if self.summarize_mode == 'TL' or self.summarize_mode == 'TL-AddErase':
+
+        if self.memory_mode == 'TL' or self.memory_mode == 'TL-AddErase':
 
             all_tokens=self.tokenLearner1(all_tokens)
-        elif self.summarize_mode == 'TL-MHA':
+        elif self.memory_mode == 'TL-MHA':
             all_tokens=self.tokenLearnerMHA(all_tokens)
 
 
-        if self.process_unit_mode == 'transformer':
+        if self.process_unit == 'transformer':
+
             output_tokens = all_tokens
             for _ in range(self.num_layers):
                 output_tokens = self.transformerBlock(output_tokens)
 
-        elif self.process_unit_mode == 'mixer':
+
+        elif self.process_unit == 'mixer':
 
             output_tokens = all_tokens # all_tokens的shape是[batch,mem_size+special_num_token,dim]
 
@@ -193,7 +199,9 @@ class TokenTuringMachineUnit(nn.Module):
                 output_tokens = output_tokens + y_output_tokens
             output_tokens = self.norm(output_tokens)
 
-        elif self.process_unit_mode == 'mlp':
+        
+        elif self.process_unit == 'mlp':
+
             output_tokens = all_tokens
             for _ in range(self.num_layers):
                 output_tokens = self.norm(output_tokens)
@@ -204,11 +212,21 @@ class TokenTuringMachineUnit(nn.Module):
         memory_input_tokens = torch.cat((memory_tokens, input_tokens, output_tokens), dim=1)
 
 
-        if self.summarize_mode == 'TL':
+        # Write add posiutional
+        if self.Write_use_positional_embedding:
+            memory_input_tokens = memory_input_tokens.cuda()
+            posemb_init = torch.nn.Parameter(torch.empty(
+                1, memory_input_tokens.size(1), memory_input_tokens.size(2))).cuda()
+            init.normal_(posemb_init, std=0.02)
+            # mem_out_tokens的shape是[batch,mem_size+special_num_token,dim]
+            memory_input_tokens = memory_input_tokens + posemb_init
+
+        if self.memory_mode == 'TL':
+
             memory_output_tokens = self.tokenLearner2(memory_input_tokens)
-        elif self.summarize_mode == 'TL-MHA':
+        elif self.memory_mode == 'TL-MHA':
             memory_output_tokens = self.tokenLearnerMHA(memory_input_tokens)
-        elif self.summarize_mode == 'TL-AddErase':
+        elif self.memory_mode == 'TL-AddErase':
             memory_output_tokens = self.tokenAddEraseWrite(memory_input_tokens,output_tokens)
         
         return (memory_output_tokens,output_tokens)
@@ -227,7 +245,7 @@ class TokenTuringMachineEncoder(nn.Module):
         self.pre = PreProcess()
         self.relu = nn.ReLU()
 
-    def forward(self, input, memory_tokens=None):
+    def forward(self, input, memory_tokens):
         input = self.pre(input)
         b, t, _, c = input.shape
         # b, t, c, _, _ = input.shape # b是batch，t是step，_是token_num，c是dim
@@ -236,7 +254,7 @@ class TokenTuringMachineEncoder(nn.Module):
         if memory_tokens == None:
             memory_tokens = torch.zeros(b,self.memory_tokens_size,c).cuda() #  c, h, w
         else:
-            memory_tokens = self.memory_tokens
+            memory_tokens = memory_tokens.detach()
         for i in range(t):
             memory_tokens, out = self.tokenTuringMachineUnit(memory_tokens, input[:,i,:,:])
             outs.append(out)
@@ -248,6 +266,23 @@ class TokenTuringMachineEncoder(nn.Module):
         out = nn.AdaptiveAvgPool1d(1)(out) # AdaptiveAvgPool1d是自适应平均池化层，输出的形状是[batch,dim,1]
         out = out.squeeze(2)
         # print(out.shape)
+
+        if config["load_memory_add_noise"]:
+            if config["load_memory_add_noise_mode"] == "normal":
+                noise = torch.randn_like(memory_tokens)
+                rate = 0.42
+                # memory_tokens = torch.nn.LayerNorm(memory_tokens.size(-1))(memory_tokens)
+                memory_tokens = memory_tokens + rate * noise
+            elif config["load_memory_add_noise_mode"] == "laplace":
+                noise = torch.distributions.laplace.Laplace(loc = 10, scale = 10).sample(memory_tokens.size())
+                noise = noise.cuda()
+                rate = 0.42
+                memory_tokens = memory_tokens + noise*rate
+            elif config["load_memory_add_noise_mode"] == "uniform":
+                noise = torch.FloatTensor(memory_tokens.size()).uniform_(-0.5, 0.5)
+                noise = noise.cuda()
+                rate = 0.42
+                memory_tokens = memory_tokens + noise*rate
 
         return self.cls(out), memory_tokens # 原来是正常的out和 memory_tokens
 
