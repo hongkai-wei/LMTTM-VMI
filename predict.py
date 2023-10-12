@@ -37,8 +37,12 @@ for i in range(len(pth_files)):
     for x,y in tqdm.tqdm(data_test):
         x = x.to("cuda", dtype = torch.float32)
         y = y.to("cuda", dtype = torch.long)
-        out, memory_tokens = model(x)
-        # out, mem = model(x, load_memory_tokens)
+
+        if (config["load_memory_tokens"] == "True"):
+            out, memory_tokens = model(x, load_memory_tokens)
+        else:
+            out, memory_tokens = model(x, memory_tokens = None)
+
         out = torch.argmax(out, dim=1)
         y = y.squeeze(1)
         all = y.size(0)

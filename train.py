@@ -29,6 +29,7 @@ data_val = get_iter("val")
 
 memory_tokens = None
 model = TokenTuringMachineEncoder().cuda()
+
 if config["optimizer"] == "RMSprop":
     optimizer = torch.optim.RMSprop(
         model.parameters(), lr=config["lr"], weight_decay=config["weight_decay"])
@@ -59,7 +60,7 @@ for _ in epoch_bar:
         if (config["load_memory_tokens"] == "True"):
             output, memory_tokens = model(input, memory_tokens)
         else:
-            output, memory_tokens = model(input)
+            output, memory_tokens = model(input, memory_tokens = None)
         train_nums += 1
         loss = citizer(output, target)
         loss.backward()
@@ -71,7 +72,7 @@ for _ in epoch_bar:
 
         if train_nums % config["val_gap"] == 0:
             avg_loss = sum(losses)/len(losses)
-            if avg_loss <= 0.2 and convergence_flag == -1:
+            if avg_loss <= 0.1 and convergence_flag == -1:
                 convergence_batch = (train_nums * batch_size)
                 convergence_flag = 1
             

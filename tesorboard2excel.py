@@ -23,7 +23,7 @@ for root, dirs, files1 in os.walk(directory1):
         file_path1 = os.path.join(root, file1)
         file_paths1.append(file_path1)
 
-path2 = rf".\log\{name}train"
+path2 = rf".\log\{name}_train"
 directory2 = path2
 file_paths2 = []
 for root, dirs, files2 in os.walk(directory2):
@@ -73,10 +73,15 @@ if __name__ == "__main__":
     else:
         os.mkdir("./log_excel")
 
-    if os.path.exists(f"./log_excel/{name}"):
+    if os.path.exists(f"./log_excel/{name}_test"):
         pass
     else:
-        os.mkdir(f"./log_excel/{name}")
+        os.mkdir(f"./log_excel/{name}_test")
+
+    if os.path.exists(f"./log_excel/{name}_train"):
+        pass
+    else:
+        os.mkdir(f"./log_excel/{name}_train")
 
     export1(tag_names1, xlsx1)
     export2(tag_names2, xlsx2)

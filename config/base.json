@@ -4,26 +4,30 @@
     "root":"./datasets_data/medmnist",
     "model":{
         "drop_r":0.2,
-        "process_unit_mode":"mixer",
-        "other_process_unit_mode":"mlp,transformer",
-        "summarize_mode":"TL",
-        "other_summarize_mode":"TL-AddErase,TL-MHA",
+        "process_unit":"transformer",
+        "other_process_unit":"mixer,transformer",
+        "memory_mode":"TL-MHA",
+        "other_memory_mode":"TL-AddErase,TL",
         "in_channels":1,
-        "dim":32,
-        "memory_tokens_size":96,
+        "dim":64,
+        "memory_tokens_size":128,
         "num_tokens":8,
         "step":28,
         "out_class_num":11,
         "patch_size":3,
-        "use_positional_embedding":"False"
+        "Read_use_positional_embedding":"False",
+        "Write_use_positional_embedding":"True",
+        "load_memory_add_noise":"True",
+        "load_memory_add_noise_mode":"normal",
+        "other_load_memory_add_noise_mode":"laplace,uniform"
     },
     "train":{
-        "name":"t9_organmnist3d_TL_mixer_memory96_tokens8",
-        "epoch":500,
+        "name":"test01_Load_TTM_MHA_transformer_WritePosition",
+        "epoch":1000,
         "optimizer":"Adam",
         "lr":1e-3,
         "weight_decay":1e-3,
-        "load_memory_tokens":"False",
+        "load_memory_tokens":"True",
         "val_gap":100
     }
 }
