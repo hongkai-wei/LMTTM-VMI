@@ -43,6 +43,7 @@ train_nums = 0
 val_acc_nums = 0
 val_acc = 0
 save_loss = []
+
 convergence_batch = -1
 convergence_flag = -1
 avg_loss = 0
@@ -72,6 +73,7 @@ for _ in epoch_bar:
 
         if train_nums % config["val_gap"] == 0:
             avg_loss = sum(losses)/len(losses)
+
             if avg_loss <= 0.1 and convergence_flag == -1:
                 convergence_batch = (train_nums * batch_size)
                 convergence_flag = 1
@@ -92,9 +94,11 @@ for _ in epoch_bar:
                 log_writer.add_scalar("val acc", val_acc, val_acc_nums)
                 val_acc_nums += 1
         # 保存后面50个epoch的模型
+
     if _ >= (config["epoch"]-50):
         save_name = f"./check_point/{config['name']}/{config['name']}_epoch_{_ -config['epoch'] + 51}.pth"
         torch.save({"model": model.state_dict(), "memory_tokens": memory_tokens}, save_name)
+
 
     if _ >= (config["epoch"]-50):
         save_loss.append(avg_loss)
@@ -115,4 +119,3 @@ with open(experiment_path, "a") as file:
     # 将print的数据重定向到文件中
     print(f"{name} convergence_batch: {convergence_batch} , train_loss: {final_save_loss}", file=file)
 
-log_writer.close()
