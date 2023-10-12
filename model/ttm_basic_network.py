@@ -242,10 +242,19 @@ class TokenTuringMachineEncoder(nn.Module):
         if config["load_memory_add_noise"]:
             if config["load_memory_add_noise_mode"] == "normal":
                 noise = torch.randn_like(memory_tokens)
-                rate = 0.3
+                rate = 0.42
                 # memory_tokens = torch.nn.LayerNorm(memory_tokens.size(-1))(memory_tokens)
                 memory_tokens = memory_tokens + rate * noise
-
+            elif config["load_memory_add_noise_mode"] == "laplace":
+                noise = torch.distributions.laplace.Laplace(loc = 10, scale = 10).sample(memory_tokens.size())
+                noise = noise.cuda()
+                rate = 0.42
+                memory_tokens = memory_tokens + noise*rate
+            elif config["load_memory_add_noise_mode"] == "uniform":
+                noise = torch.FloatTensor(memory_tokens.size()).uniform_(-0.5, 0.5)
+                noise = noise.cuda()
+                rate = 0.42
+                memory_tokens = memory_tokens + noise*rate
 
         return self.cls(out), memory_tokens # 原来是正常的out和 memory_tokens
 

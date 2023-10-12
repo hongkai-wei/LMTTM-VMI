@@ -5,9 +5,9 @@
     "model":{
         "drop_r":0.2,
         "process_unit":"transformer",
-        "other_process_unit":"mixer,transformer",
+        "all_process_unit":"transformer, mixer,transformer",
         "memory_mode":"TL-MHA",
-        "other_memory_mode":"TL-AddErase,TL",
+        "all_memory_mode":"TL-MHA, TL-AddErase, TL",
         "in_channels":1,
         "dim":64,
         "memory_tokens_size":128,
@@ -18,12 +18,12 @@
         "Read_use_positional_embedding":"False",
         "Write_use_positional_embedding":"True",
         "load_memory_add_noise":"True",
-        "load_memory_add_noise_mode":"normal",
-        "other_load_memory_add_noise_mode":"laplace,uniform"
+        "load_memory_add_noise_mode":"uniform",
+        "all_load_memory_add_noise_mode":"uniform, laplace, uniform"
     },
     "train":{
-        "name":"test01_Load_TTM_MHA_transformer_WritePosition",
-        "epoch":1000,
+        "name":"test03_Load_TTM_MHA_transformer_WritePosition",
+        "epoch":600,
         "optimizer":"Adam",
         "lr":1e-3,
         "weight_decay":1e-3,
