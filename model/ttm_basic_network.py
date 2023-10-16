@@ -5,6 +5,7 @@ from einops.layers.torch import Rearrange
 import torch.nn.init as init
 from .tokenLearner_network import TokenLearnerModuleV11
 from config.configure import Config
+import numpy as np
 
 config = Config.getInstance()
 batch_size = config["batch_size"]
@@ -242,19 +243,39 @@ class TokenTuringMachineEncoder(nn.Module):
         if config["load_memory_add_noise"]:
             if config["load_memory_add_noise_mode"] == "normal":
                 noise = torch.randn_like(memory_tokens)
-                rate = 0.42
+                noise_rate = 0.42
                 # memory_tokens = torch.nn.LayerNorm(memory_tokens.size(-1))(memory_tokens)
-                memory_tokens = memory_tokens + rate * noise
+                memory_tokens = memory_tokens + noise_rate * noise
             elif config["load_memory_add_noise_mode"] == "laplace":
                 noise = torch.distributions.laplace.Laplace(loc = 10, scale = 10).sample(memory_tokens.size())
                 noise = noise.cuda()
-                rate = 0.42
-                memory_tokens = memory_tokens + noise*rate
+                noise_rate = 0.42
+                memory_tokens = memory_tokens + noise*noise_rate
             elif config["load_memory_add_noise_mode"] == "uniform":
                 noise = torch.FloatTensor(memory_tokens.size()).uniform_(-0.5, 0.5)
                 noise = noise.cuda()
-                rate = 0.42
-                memory_tokens = memory_tokens + noise*rate
+                noise_rate = 0.42
+                memory_tokens = memory_tokens + noise*noise_rate
+            elif config["load_memory_add_noise_mode"] == "exp":
+                noise = torch.empty(memory_tokens.size()).exponential_()
+                noise = noise.cuda()
+                noise_rate = 0.42
+                memory_tokens = memory_tokens + noise*noise_rate
+            elif config["load_memory_add_noise_mode"] == "gamma":
+                shape = torch.tensor([2.0])  # Gamma分布的形状参数
+                scale = torch.tensor([2.0])  # Gamma分布的尺度参数
+                noise = torch.empty(memory_tokens.size())  # 创建与噪音张量相同的空张量
+                noise = noise.cuda()
+                noise.copy_(torch.from_numpy(np.random.gamma(shape.item(), scale.item(), size=noise.size())))  # 将正态分布随机数转化为Gamma分布随机数
+                noise_rate = 0.42
+                memory_tokens = memory_tokens + noise*noise_rate
+            elif config["load_memory_add_noise_mode"] == "poisson":
+                rate = torch.tensor([2.0])  # 泊松分布的参数
+                noise = torch.poisson(rate.expand(memory_tokens.size()))  # 生成泊松分布的噪音
+                noise = noise.float()
+                noise = noise.cuda()
+                noise_rate = 0.42
+                memory_tokens = memory_tokens + noise * noise_rate
 
         return self.cls(out), memory_tokens # 原来是正常的out和 memory_tokens
 

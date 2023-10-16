@@ -1,33 +1,33 @@
 {
-    "batch_size":96,
-    "dataset_name":"organmnist3d",
-    "root":"./datasets_data/medmnist",
-    "model":{
-        "drop_r":0.2,
-        "process_unit":"transformer",
-        "all_process_unit":"transformer, mixer,transformer",
-        "memory_mode":"TL-MHA",
-        "all_memory_mode":"TL-MHA, TL-AddErase, TL",
-        "in_channels":1,
-        "dim":64,
-        "memory_tokens_size":128,
-        "num_tokens":8,
-        "step":28,
-        "out_class_num":11,
-        "patch_size":3,
-        "Read_use_positional_embedding":"False",
-        "Write_use_positional_embedding":"True",
-        "load_memory_add_noise":"True",
-        "load_memory_add_noise_mode":"uniform",
-        "all_load_memory_add_noise_mode":"uniform, laplace, uniform"
+    "batch_size": 48,
+    "dataset_name": "organmnist3d",
+    "root": "./datasets_data/medmnist",
+    "model": {
+        "drop_r": 0.2,
+        "process_unit": "transformer",
+        "all_process_unit": "transformer, mixer,transformer",
+        "memory_mode": "TL-MHA",
+        "all_memory_mode": "TL-MHA, TL-AddErase, TL",
+        "in_channels": 1,
+        "dim": 128,
+        "memory_tokens_size": 8192,
+        "num_tokens": 64,
+        "step": 28,
+        "out_class_num": 11,
+        "patch_size": 3,
+        "Read_use_positional_embedding": "False",
+        "Write_use_positional_embedding": "True",
+        "load_memory_add_noise": "True",
+        "load_memory_add_noise_mode": "laplace",
+        "all_load_memory_add_noise_mode": "uniform, laplace, normal, exp, gamma, poisson"
     },
-    "train":{
-        "name":"test03_Load_TTM_MHA_transformer_WritePosition",
-        "epoch":600,
-        "optimizer":"Adam",
-        "lr":1e-3,
-        "weight_decay":1e-3,
-        "load_memory_tokens":"True",
-        "val_gap":100
+    "train": {
+        "name": "TTM_MHA_transformer_WritePosition_Load_laplace_mem8192_tokens64",
+        "epoch": 1200,
+        "optimizer": "Adam",
+        "lr": 0.001,
+        "weight_decay": 0.001,
+        "load_memory_tokens": "True",
+        "val_gap": 100
     }
 }
