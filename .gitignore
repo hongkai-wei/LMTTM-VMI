@@ -37,6 +37,7 @@ check_point
 log
 log_excel
 experiment
+datasets_data
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

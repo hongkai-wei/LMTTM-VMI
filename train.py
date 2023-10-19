@@ -24,8 +24,8 @@ if os.path.exists(checkpoint_path):
 else:
     os.mkdir(checkpoint_path)
 
-data_train = get_iter("train")  # $ train val test
-data_val = get_iter("val")
+data_train = get_iter("train", download=True)
+data_val = get_iter("val", download=True)
 
 memory_tokens = None
 model = TokenTuringMachineEncoder().cuda()
@@ -48,13 +48,14 @@ convergence_batch = -1
 convergence_flag = -1
 avg_loss = 0
 
+model.train()
+
 for _ in epoch_bar:
     epoch_bar.set_description(
         f"train epoch is {format(_+1)} of {config['epoch']}")
     bar = tqdm.tqdm(data_train, leave=False)
     losses = []
     for input, target in bar:
-        model.train()
         input = input.to("cuda", dtype=torch.float32)  # B C T H W
         target = target.to("cuda", dtype=torch.long)  # B 1
         target = target.squeeze(1)  # B 1
