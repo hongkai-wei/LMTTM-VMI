@@ -1,17 +1,26 @@
-TTM
-现已完善框架
+# Neutral Turing Machine With Detachable Memory
 
-当前用在了视频分类任务中：
+We design a neutral turing machine with detachable memory. The memory is detachable in the sense that it can be detached from the machine (network) and reattached to another machine (network). 
 
-调用之前请在config/base.json 中的dataset字典定义相关路径和参数
-训练batch(由本地显存决定)，epoch请自行修改,tensorbaord名字，请在train字典中修改
 
-usage: python train.py
-断点权重保存在了./checkpoint
-tensorboard保存在了./log
+## Roadmap
 
-把tensorboard2excel也融入进去了
-现在只要一改完config的参数，直接运行main.py，会自动训练、验证、生成excel文件表，
-并且每次训练的最小损失、收敛batch和测试集测试准确率都会保存在experiment.txt文件夹下。
+| Task | Description | Status | Start Date | End Date |
+| :---: | :---: | :---: | :---: | :---: |
+| 2 | Implement the NTM-DM | Completed | 2023-10-19 | - |
+| 1 | Find the best parameters of ttm | Completed | 2023-09-20 | 2023-10-19 |
 
-目前还在更新......
+
+## Dataset
+
+## How to run
+
+## Results
+
+## References
+
+- TTM
+- NTM
+
+
+## Acknowledgements
