@@ -1,8 +1,8 @@
-from utils.get_data_iter import get_iter
+from utils.get_data_iter import get_dataloader
 from model.ttm_basic_network import TokenTuringMachineEncoder
 from utils.log import logger
 from config import Config
-from utils.get_data_iter import get_iter
+from utils.get_data_iter import get_dataloader
 from einops.layers.torch import Rearrange
 import torch
 import tqdm
@@ -17,7 +17,7 @@ log_writer = log_writer.get()
 
 name = config["name"]
 
-data_test = get_iter("test")
+data_test = get_dataloader("test")
 
 pth = f".\\check_point\\{name}\\"
 pth_files = [f"{pth}{name}_epoch_{i}.pth" for i in range(1, 51)] 
