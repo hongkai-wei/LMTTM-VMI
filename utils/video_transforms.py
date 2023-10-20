@@ -27,20 +27,20 @@ class ShuffleTransforms:
 
     def __call__(self, clip):
         assert len(clip.shape) == 4, "clip should be a 4D tensor."
-        T, C, W, H = clip.shape
+        C, T, W, H = clip.shape
+        if "C" in self.mode:
+            index = np.arange(C)
+            np.random.shuffle(index)
+            clip = clip[index, :, :, :]
         if "T" in self.mode:
             index = np.arange(T)
             np.random.shuffle(index)
-            clip = clip[index, :, :, :]
-        elif "C" in self.mode:
-            index = np.arange(C)
-            np.random.shuffle(index)
             clip = clip[:, index, :, :]
-        elif "W" in self.mode:
+        if "W" in self.mode:
             index = np.arange(W)
             np.random.shuffle(index)
             clip = clip[:, :, index, :]
-        elif "H" in self.mode:
+        if "H" in self.mode:
             index = np.arange(H)
             np.random.shuffle(index)
             clip = clip[:, :, :, index]
