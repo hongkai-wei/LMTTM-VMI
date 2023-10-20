@@ -6,7 +6,7 @@ import torch
 import tqdm
 import os
 
-from utils.video_transforms import Compose, CutMix
+from utils.video_transforms import *
 
 config = Config.getInstance()
 batch_size = config["batch_size"]
@@ -26,8 +26,12 @@ if os.path.exists(checkpoint_path):
 else:
     os.mkdir(checkpoint_path)
 
-transform_train = None
-transform_val = None
+transform_train = Compose([
+    ShuffleTransforms(mode="CWH")
+])
+transform_val = Compose([
+    ShuffleTransforms(mode="CWH")
+])
 data_train = get_dataloader("train", download=True, transform=transform_train)
 data_val = get_dataloader("val", download=transform_val)
 
