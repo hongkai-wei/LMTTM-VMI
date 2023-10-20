@@ -5,17 +5,19 @@ import os
 class Config:
     __instance = None
     __config = None
+    config_file = None
 
     @staticmethod
-    def getInstance():
-        if Config.__instance == None:
-            Config()
+    def getInstance(config_file="base.json"):
+        if Config.__instance == None or Config.config_file != config_file:
+            Config(config_file)
         return Config.__instance
 
     def __init__(self, config_file="base.json"):
-        if Config.__instance != None:
+        if Config.__instance != None and Config.config_file == config_file:
             raise Exception("This class is a singleton!")
         else:
+            Config.config_file = config_file
             Config.__instance = self
             self.__loadConfig(os.path.join(os.path.dirname(__file__), "base.json"))#__file__在Python里面是指当前文件的文件名
             if config_file != "base.json":
