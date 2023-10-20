@@ -1,10 +1,12 @@
-from utils.get_data_iter import get_iter
+from utils.get_data_iter import get_dataloader
 from model.ttm_basic_network import TokenTuringMachineEncoder
 from utils.log import logger
 from config import Config
 import torch
 import tqdm
 import os
+
+from utils.video_transforms import *
 
 config = Config.getInstance()
 batch_size = config["batch_size"]
@@ -24,8 +26,14 @@ if os.path.exists(checkpoint_path):
 else:
     os.mkdir(checkpoint_path)
 
-data_train = get_iter("train", download=True)
-data_val = get_iter("val", download=True)
+transform_train = Compose([
+    ShuffleTransforms(mode="CWH")
+])
+transform_val = Compose([
+    ShuffleTransforms(mode="CWH")
+])
+data_train = get_dataloader("train", download=True, transform=transform_train)
+data_val = get_dataloader("val", download=transform_val)
 
 memory_tokens = None
 model = TokenTuringMachineEncoder().cuda()
