@@ -3,6 +3,10 @@ import torch.utils.data as data
 import medmnist
 from medmnist import INFO, Evaluator
 from torch.utils.data import DataLoader
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from config import Config
 config = Config.getInstance()
 # rewrite the medmnist class
@@ -29,3 +33,11 @@ class MedMNISTDataset:
 
     def __len__(self):
         return self.dataset.__len__()
+    
+    
+if __name__ == "__main__":
+    from torchshow import torchshow
+    dataset = MedMNISTDataset()
+    dataloader = DataLoader(dataset, batch_size=1, shuffle=True)
+    for i, (data, label) in enumerate(dataloader):
+        torchshow.show_video(data[0].permute(1, 0, 2, 3))

@@ -4,7 +4,7 @@ import os
 def get_dataset(split, download=False, transform=None):
     config = Config.getInstance()
     if config["dataset_name"] == "organmnist3d":
-        from .medmnist import MedMNISTDataset
+        from .medmnist_data import MedMNISTDataset
         # if cannot find the root directory, then create it.
         if not os.path.exists(Config.getInstance()["root"]):
             os.makedirs(Config.getInstance()["root"])
