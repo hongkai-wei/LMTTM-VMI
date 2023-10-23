@@ -1,6 +1,23 @@
 import json
 import os
 
+class DictToObject:
+    def __init__(self, dictionary):
+        for key, value in dictionary.items():
+            if isinstance(value, dict):
+                setattr(self, key, DictToObject(value))
+            else:
+                setattr(self, key, value)
+                
+    def __getitem__(self, key):
+        return getattr(self, key)
+    
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+                
+def dict_to_object_recursive(input_dict):
+    return DictToObject(input_dict)
+
 # create singleton config to load the json configure file
 class Config:
     __instance = None
@@ -22,6 +39,9 @@ class Config:
             self.__loadConfig(os.path.join(os.path.dirname(__file__), "base.json"))#__file__在Python里面是指当前文件的文件名
             if config_file != "base.json":
                 self.__loadConfig(os.path.join(os.path.dirname(__file__), config_file))
+            
+            self.__config = dict_to_object_recursive(self._Config__config)
+
 
     def __loadConfig(self, config_file):
         assert os.path.exists(config_file), "The configure file does not exist!"
@@ -32,7 +52,7 @@ class Config:
         else:
             self.__update(self.__config, config)
             
-    def __update(self, config, config_file):#参数是两个字典 源 现字典
+    def __update(self, config, config_file):
         for key in config_file:
             if key in config:
                 if isinstance(config[key], dict):
