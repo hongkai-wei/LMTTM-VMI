@@ -1,6 +1,7 @@
 tools/
 *.ipynb
 logs/
+log
 check*
 checkpoints/
 # Byte-compiled / optimized / DLL files
