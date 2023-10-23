@@ -5,26 +5,22 @@ from config import Config
 import torch
 import tqdm
 import os
-
 from utils.video_transforms import *
-
 config = Config.getInstance()
 batch_size = config["batch_size"]
 config = config["train"]
 name = config["name"]
-log_writer = logger(config["name"] + "_train")
-log_writer = log_writer.get()
-
-if os.path.exists("./check_point"):
-    pass
-else:
-    os.mkdir("./check_point")
-
+log_writer = logger(config["name"] + "_train")()
+######### ################################## for predict, if upload this code, please delete this block code
+if not os.path.exists("./check_point1"):
+    os.mkdir("./check_point1")
 checkpoint_path = f"./check_point/{config['name']}"
 if os.path.exists(checkpoint_path):
     pass
 else:
     os.mkdir(checkpoint_path)
+
+######################################
 
 transform_train = Compose([
     ShuffleTransforms(mode="CWH")

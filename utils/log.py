@@ -1,15 +1,16 @@
 from torch.utils.tensorboard import SummaryWriter
 import os
-
-log = "./log"
-if os.path.exists(log) == False:
+from config import Config
+configs = Config.getInstance()
+log =configs["log_dir"]
+if os.path.exists(log) == False:#if log dir not exist, create it
     os.mkdir(log)
-
 
 class logger():
     def __init__(self, name) -> None:
-        self.log_dir = os.path.join(log, name)
-        self.writer = SummaryWriter(log_dir=self.log_dir)
 
-    def get(self):
-        return self.writer
+        log_dir = os.path.join(log, name)
+        self.logger = SummaryWriter(log_dir=log_dir)
+
+    def __call__(self):
+        return self.logger
