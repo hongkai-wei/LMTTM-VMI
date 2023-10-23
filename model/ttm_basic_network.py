@@ -244,7 +244,7 @@ class TokenTuringMachineEncoder(nn.Module):
         out = out.squeeze(2)
         # print(out.shape)
 
-        if config["load_memory_add_noise"]:
+        if config["model"]["load_memory_add_noise"]:
             if config["model"]["load_memory_add_noise_mode"] == "normal":
                 noise = torch.randn_like(memory_tokens)
                 noise = noise.cuda()
