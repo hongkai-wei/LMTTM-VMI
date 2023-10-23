@@ -1,0 +1,11 @@
+{
+    "model": {
+        "process_unit": "transformer",
+        "all_process_unit": "mlp, mixer,transformer",
+        "memory_mode": "TL-AddErase",
+        "all_memory_mode": "TL-MHA, TL-AddErase, TL"
+    },
+    "train": {
+        "name": "exp2_AddErase_transformer"
+    }
+}

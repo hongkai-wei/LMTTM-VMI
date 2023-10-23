@@ -1,0 +1,9 @@
+{
+    "model": {
+        "Read_use_positional_embedding": false,
+        "Write_use_positional_embedding": true
+    },
+    "train": {
+        "name": "TTM_Read_positional_embedding"
+    }
+}

@@ -9,20 +9,11 @@ import numpy as np
 
 config = Config.getInstance()
 
-class PreProcess(nn.Module):
-    def __init__(self, patch_t=4, patch_h=4, patch_w=4) -> None:
-        super(PreProcess, self).__init__()
-        self.lay = nn.Sequential(Rearrange('b c (t pt) (h ph) (w pw) -> b t (h w) (pt ph pw c)', 
-                                            pt=patch_t, ph=patch_h, pw=patch_w),
-                                  nn.Linear(patch_h*patch_t*patch_w*config["model"]["in_channels"], config["model"]["dim"]), )
-
-    def forward(self, x):
-        x = self.lay(x)
-        return x
-
-class PreProcessV2(nn.Module):  # 输入Batch,Channels,config["model"]["step"],H,W  最终得到Batch，config["model"]["step"]，TOKEN，Channels
+class PreProcess(nn.Module): 
+    # Input：Batch,Channels,Step,H,W  
+    # Output：Batch，Step，Tokens，Channels
     def __init__(self) -> None:
-        super(PreProcessV2, self).__init__()
+        super(PreProcess, self).__init__()
         self.conv = nn.Conv3d(in_channels=config["model"]["in_channels"], 
                              out_channels=config["model"]["dim"],
                              kernel_size=config["model"]["patch_size"], 
@@ -31,11 +22,22 @@ class PreProcessV2(nn.Module):  # 输入Batch,Channels,config["model"]["step"],H
         self.relu = nn.ReLU()
 
     def forward(self, input):
-        input = input.transpose(1, 2)
+        # input = input.transpose(1, 2)
         x = self.conv(input)
         x = self.relu(x)
         x = x.flatten(3)
         x = x.permute(0, 2, 3, 1)
+        return x
+    
+class PreProcessV2(nn.Module):
+    def __init__(self, patch_t=3, patch_h=3, patch_w=3) -> None:
+        super(PreProcessV2, self).__init__()
+        self.lay = nn.Sequential(Rearrange('b c (t pt) (h ph) (w pw) -> b t (h w) (pt ph pw c)', 
+                                            pt=patch_t, ph=patch_h, pw=patch_w),
+                                  nn.Linear(patch_h*patch_t*patch_w*config["model"]["in_channels"], config["model"]["dim"]), )
+
+    def forward(self, x):
+        x = self.lay(x)
         return x
 
 class TokenLearnerMHA(nn.Module):
@@ -45,11 +47,9 @@ class TokenLearnerMHA(nn.Module):
         self.attn = nn.MultiheadAttention(embed_dim=config["model"]["dim"], num_heads=8, dropout=0.1, batch_first=True)
 
     def forward(self, input):
-        # [0]是结果，[1]是权重  B config["model"]["step"] 8 C
+        # [0]is output，[1]is weight
         return self.attn(self.query, input, input)[0]
 
-
-# mem B,SIZE,config["model"]["dim"]  control B,8,config["model"]["dim"]    #OUT B,SIZE,config["model"]["dim"]
 class TokenAddEraseWrite(nn.Module):
     def __init__(self) -> None:
         super(TokenAddEraseWrite, self).__init__()
@@ -104,7 +104,7 @@ class TokenAddEraseWrite(nn.Module):
         wat = torch.mean(wat, dim=1)
 
         output = output + wat
-        # 更改output形状
+        # Changing the Output Shape
         output = self.trans_outdim(self.query, output, output)[0]
 
 
@@ -150,7 +150,6 @@ class TokenTuringMachineUnit(nn.Module):
             posemb_init = torch.nn.Parameter(torch.empty(
                 1, all_tokens.size(1), all_tokens.size(2))).cuda()
             init.normal_(posemb_init, std=0.02)
-            # mem_out_tokens的shape是[batch,mem_size+special_num_token,config["model"]["dim"]]
             all_tokens = all_tokens + posemb_init
 
         if config["model"]["memory_mode"] == 'TL' or config["model"]["memory_mode"] == 'TL-AddErase':
@@ -164,18 +163,18 @@ class TokenTuringMachineUnit(nn.Module):
                 output_tokens = self.transformerBlock(output_tokens)
 
         elif config["model"]["process_unit"] == 'mixer':
-            output_tokens = all_tokens # all_tokens的shape是[batch,mem_size+special_num_token,config["model"]["dim"]]
+            output_tokens = all_tokens # all_tokens shape is [batch,mem_size+special_num_token,config["model"]["dim"]]
             for _ in range(self.num_layers):
-                # Token mixing，不同token互通
+                # Token mixing，different token interoperability
                 x_output_tokens = output_tokens
                 x_output_tokens = self.norm(x_output_tokens)
-                x_output_tokens = x_output_tokens.permute(0, 2, 1) # permute是将输入张量的维度换位，output_tokens的shape是[batch,config["model"]["dim"],mem_size+special_num_token]
-                x_output_tokens = self.mixer_sequence_block(x_output_tokens) # mixer_block是一个全连接层，输入是config["model"]["dim"]维，输出是config["model"]["dim"]维
-                x_output_tokens = x_output_tokens.permute(0, 2, 1) # output_tokens的shape是[batch,mem_size+special_num_token,config["model"]["dim"]]
-                x_output_tokens = x_output_tokens + output_tokens # output_tokens的shape是[batch,mem_size+special_num_token,config["model"]["dim"]]
+                x_output_tokens = x_output_tokens.permute(0, 2, 1) 
+                x_output_tokens = self.mixer_sequence_block(x_output_tokens)
+                x_output_tokens = x_output_tokens.permute(0, 2, 1)
+                x_output_tokens = x_output_tokens + output_tokens
                 x_output_tokens = self.dropout(x_output_tokens)
 
-                # Channel mixing，token内部互通
+                # Channel mixing，internal token interoperability
                 y_output_tokens = self.norm(x_output_tokens)
                 y_output_tokens = self.mixer_channels__block(y_output_tokens)
                 y_output_tokens = self.dropout(y_output_tokens)
@@ -197,7 +196,7 @@ class TokenTuringMachineUnit(nn.Module):
             posemb_init = torch.nn.Parameter(torch.empty(
                 1, memory_input_tokens.size(1), memory_input_tokens.size(2))).cuda()
             init.normal_(posemb_init, std=0.02)
-            # mem_out_tokens的shape是[batch,mem_size+special_num_token,config["model"]["dim"]]
+            # mem_out_tokens shape is [batch,mem_size+special_num_token,config["model"]["dim"]]
             memory_input_tokens = memory_input_tokens + posemb_init
 
         if config["model"]["memory_mode"] == 'TL':
@@ -221,12 +220,8 @@ class TokenTuringMachineEncoder(nn.Module):
         self.relu = nn.ReLU()
 
     def forward(self, input, memory_tokens):
-        if config["dataset_name"] == "UCF101":
-            input = self.preV2(input)
-        else:
-            input = self.pre(input)
+        input = self.pre(input)
         b, t, _, c = input.shape
-        # b, t, c, _, _ = input.shape # b是batch，t是config["model"]["step"]，_是token_num，c是config["model"]["dim"]
         outs=[]
         if memory_tokens == None:
             memory_tokens = torch.zeros(b,config["model"]["memory_tokens_size"],c).cuda() #  c, h, w
@@ -236,11 +231,11 @@ class TokenTuringMachineEncoder(nn.Module):
             memory_tokens, out = self.tokenTuringMachineUnit(memory_tokens, input[:,i,:,:])
             outs.append(out)
 
-        # 满足输出的shape---自添加
-        outs = torch.stack(outs, dim=1)#SHAPE [B,config["model"]["step"],NUM_TOKEN,config["model"]["dim"]]
-        out = outs.view(config["batch_size"], -1, config["model"]["dim"]) # out的shape是[batch,config["model"]["step"]*token_num,config["model"]["dim"]]
+        
+        outs = torch.stack(outs, dim=1)
+        out = outs.view(config["batch_size"], -1, config["model"]["dim"])
         out = out.transpose(1, 2)
-        out = nn.AdaptiveAvgPool1d(1)(out) # AdaptiveAvgPool1d是自适应平均池化层，输出的形状是[batch,config["model"]["dim"],1]
+        out = nn.AdaptiveAvgPool1d(1)(out) 
         out = out.squeeze(2)
         # print(out.shape)
 
@@ -266,23 +261,23 @@ class TokenTuringMachineEncoder(nn.Module):
                 noise_rate = 0.3
                 memory_tokens = memory_tokens + noise*noise_rate
             elif config["model"]["load_memory_add_noise_mode"] == "gamma":
-                shape = torch.tensor([2.0])  # Gamma分布的形状参数
-                scale = torch.tensor([2.0])  # Gamma分布的尺度参数
-                noise = torch.empty(memory_tokens.size())  # 创建与噪音张量相同的空张量
+                shape = torch.tensor([2.0])  # Shape parameters of the Gamma distribution
+                scale = torch.tensor([2.0])  # Scale parameters of the Gamma distribution
+                noise = torch.empty(memory_tokens.size())  # Create the same empty tensor as the noise tensor
                 noise = noise.cuda()
                 noise.copy_(torch.from_numpy(np.random.gamma(shape.item(), scale.item(), size=noise.size())))  # 将正态分布随机数转化为Gamma分布随机数
                 noise_rate = 0.3
                 memory_tokens = memory_tokens + noise*noise_rate
             elif config["model"]["load_memory_add_noise_mode"] == "poisson":
-                rate = torch.tensor([2.0])  # 泊松分布的参数
-                noise = torch.poisson(rate.expand(memory_tokens.size()))  # 生成泊松分布的噪音
+                rate = torch.tensor([2.0])  # Parameters of the Poisson distribution
+                noise = torch.poisson(rate.expand(memory_tokens.size()))  # Generating Poisson distributed noise
                 noise = noise.float()
                 noise = noise.cuda()
                 noise_rate = 0.3
                 memory_tokens = memory_tokens + noise * noise_rate
 
-        return self.cls(out), memory_tokens # 原来是正常的out和 memory_tokens
-
+        return self.cls(out), memory_tokens
+    
 # if __name__ == "__main__":
 #     inputs = torch.randn(config["batch_size"], config["model"]["step"], 1, 28, 28).cuda() # [bs, config["model"]["step"], c, h, w]
 #     model = TokenTuringMachineEncoder().cuda()
