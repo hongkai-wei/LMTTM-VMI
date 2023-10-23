@@ -28,7 +28,7 @@ class Config:
     def getInstance(config_file="base.json"):
         if Config.__instance == None or Config.config_file != config_file:
             Config(config_file)
-        return Config.__instance
+        return Config.__instance.__config
 
     def __init__(self, config_file="base.json"):
         if Config.__instance != None and Config.config_file == config_file:
