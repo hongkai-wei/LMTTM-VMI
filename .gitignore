@@ -36,8 +36,8 @@ organmnist3d.npz
 *.npz
 datasets_data
 check_point
-log
-log_excel
+logs
+logs_excel
 experiment
 datasets_data
 

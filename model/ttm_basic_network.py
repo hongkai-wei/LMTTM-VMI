@@ -9,20 +9,9 @@ import numpy as np
 
 config = Config.getInstance()
 
-class PreProcess(nn.Module):
-    def __init__(self, patch_t=4, patch_h=4, patch_w=4) -> None:
-        super(PreProcess, self).__init__()
-        self.lay = nn.Sequential(Rearrange('b c (t pt) (h ph) (w pw) -> b t (h w) (pt ph pw c)', 
-                                            pt=patch_t, ph=patch_h, pw=patch_w),
-                                  nn.Linear(patch_h*patch_t*patch_w*config["model"]["in_channels"], config["model"]["dim"]), )
-
-    def forward(self, x):
-        x = self.lay(x)
-        return x
-
-class PreProcessV2(nn.Module):  # 输入Batch,Channels,config["model"]["step"],H,W  最终得到Batch，config["model"]["step"]，TOKEN，Channels
+class PreProcess(nn.Module):  # 输入Batch,Channels,config["model"]["step"],H,W  最终得到Batch，config["model"]["step"]，TOKEN，Channels
     def __init__(self) -> None:
-        super(PreProcessV2, self).__init__()
+        super(PreProcess, self).__init__()
         self.conv = nn.Conv3d(in_channels=config["model"]["in_channels"], 
                              out_channels=config["model"]["dim"],
                              kernel_size=config["model"]["patch_size"], 
@@ -31,11 +20,22 @@ class PreProcessV2(nn.Module):  # 输入Batch,Channels,config["model"]["step"],H
         self.relu = nn.ReLU()
 
     def forward(self, input):
-        input = input.transpose(1, 2)
+        # input = input.transpose(1, 2)
         x = self.conv(input)
         x = self.relu(x)
         x = x.flatten(3)
         x = x.permute(0, 2, 3, 1)
+        return x
+    
+class PreProcessV2(nn.Module):
+    def __init__(self, patch_t=3, patch_h=3, patch_w=3) -> None:
+        super(PreProcessV2, self).__init__()
+        self.lay = nn.Sequential(Rearrange('b c (t pt) (h ph) (w pw) -> b t (h w) (pt ph pw c)', 
+                                            pt=patch_t, ph=patch_h, pw=patch_w),
+                                  nn.Linear(patch_h*patch_t*patch_w*config["model"]["in_channels"], config["model"]["dim"]), )
+
+    def forward(self, x):
+        x = self.lay(x)
         return x
 
 class TokenLearnerMHA(nn.Module):
@@ -221,10 +221,7 @@ class TokenTuringMachineEncoder(nn.Module):
         self.relu = nn.ReLU()
 
     def forward(self, input, memory_tokens):
-        if config["dataset_name"] == "UCF101":
-            input = self.preV2(input)
-        else:
-            input = self.pre(input)
+        input = self.pre(input)
         b, t, _, c = input.shape
         # b, t, c, _, _ = input.shape # b是batch，t是config["model"]["step"]，_是token_num，c是config["model"]["dim"]
         outs=[]
