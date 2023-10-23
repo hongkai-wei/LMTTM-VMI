@@ -10,6 +10,10 @@ import torch
 import tqdm
 from utils.video_transforms import *
 
+
+def train():
+    pass
+
 # get the config
 config = Config.getInstance()
 batch_size = config["batch_size"]
@@ -18,4 +22,9 @@ name = config["name"]
 log_writer = logger(config["name"] + "_train")
 log_writer = log_writer.get()
 
-    
+transform_train = Compose([
+    ShuffleTransforms(mode="CWH")
+])
+transform_val = Compose([
+    ShuffleTransforms(mode="CWH")
+])

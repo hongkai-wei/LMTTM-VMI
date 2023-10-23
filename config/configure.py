@@ -23,7 +23,7 @@ class Config:
             if config_file != "base.json":
                 self.__loadConfig(os.path.join(os.path.dirname(__file__), config_file))
             
-            self.__convert_key()
+            self.convert_key()
             
     
     def __convert_key(self, key, value):

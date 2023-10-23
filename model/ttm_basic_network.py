@@ -8,7 +8,6 @@ from config.configure import Config
 import numpy as np
 
 config = Config.getInstance()
-config = config["model"]
 drop_r = config["model"]["drop_r"]
 process_unit = config["model"]["process_unit"]
 memory_mode = config["model"]["memory_mode"]
