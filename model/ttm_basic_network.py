@@ -8,20 +8,18 @@ from config.configure import Config
 import numpy as np
 
 config = Config.getInstance()
-batch_size = config["batch_size"]
-dataset_name = config["dataset_name"]
 config = config["model"]
-drop_r = config["drop_r"]
-process_unit = config["process_unit"]
-memory_mode = config["memory_mode"]
-in_channels = config["in_channels"]
-dim = config["dim"]
-memory_tokens_size = config["memory_tokens_size"]
-step = config["step"]
-patch_size = config["patch_size"]
-num_tokens = config["num_tokens"]
-Read_use_positional_embedding = config["Read_use_positional_embedding"]
-Write_use_positional_embedding = config["Write_use_positional_embedding"]
+drop_r = config["model"]["drop_r"]
+process_unit = config["model"]["process_unit"]
+memory_mode = config["model"]["memory_mode"]
+in_channels = config["model"]["in_channels"]
+dim = config["model"]["dim"]
+memory_tokens_size = config["model"]["memory_tokens_size"]
+step = config["model"]["step"]
+patch_size = config["model"]["patch_size"]
+num_tokens = config["model"]["num_tokens"]
+Read_use_positional_embedding = config["model"]["Read_use_positional_embedding"]
+Write_use_positional_embedding = config["model"]["Write_use_positional_embedding"]
 import torch
 import torch.nn as nn
 
@@ -57,7 +55,7 @@ class PreProcessV2(nn.Module):  # 输入Batch,Channels,Step,H,W  最终得到Bat
 class TokenLearnerMHA(nn.Module):
     def __init__(self, output_tokens) -> None:
         super(TokenLearnerMHA, self).__init__()
-        self.query = nn.Parameter(torch.randn(batch_size, output_tokens, dim).cuda())
+        self.query = nn.Parameter(torch.randn(config["batch_size"], output_tokens, dim).cuda())
         self.attn = nn.MultiheadAttention(embed_dim=dim, num_heads=8, dropout=0.1, batch_first=True)
 
     def forward(self, input):
@@ -87,7 +85,7 @@ class TokenAddEraseWrite(nn.Module):
                                             nn.Linear(3*dim, dim), 
                                             nn.GELU())
         self.query = nn.Parameter(torch.randn(
-            batch_size, memory_tokens_size, dim).cuda())
+            config["batch_size"], memory_tokens_size, dim).cuda())
         self.trans_outdim = nn.MultiheadAttention(
             embed_dim=dim, num_heads=8, dropout=0.1, batch_first=True)
         self.softmax = nn.Softmax(dim = -1)
@@ -234,7 +232,7 @@ class TokenTuringMachineEncoder(nn.Module):
     def __init__(self) -> None:
         self.memory_tokens_size = memory_tokens_size
         super(TokenTuringMachineEncoder, self).__init__()
-        self.memory_tokens = torch.zeros(batch_size, self.memory_tokens_size, dim).cuda()
+        self.memory_tokens = torch.zeros(config["batch_size"], self.memory_tokens_size, dim).cuda()
         self.tokenTuringMachineUnit = TokenTuringMachineUnit()
         self.cls = nn.Linear(dim, config["out_class_num"])
         self.pre = PreProcess()
@@ -242,7 +240,7 @@ class TokenTuringMachineEncoder(nn.Module):
         self.relu = nn.ReLU()
 
     def forward(self, input, memory_tokens):
-        if dataset_name == "UCF101":
+        if config["dataset_name"] == "UCF101":
             input = self.preV2(input)
         else:
             input = self.pre(input)
@@ -259,7 +257,7 @@ class TokenTuringMachineEncoder(nn.Module):
 
         # 满足输出的shape---自添加
         outs = torch.stack(outs, dim=1)#SHAPE [B,STEP,NUM_TOKEN,DIM]
-        out = outs.view(batch_size, -1, dim) # out的shape是[batch,step*token_num,dim]
+        out = outs.view(config["batch_size"], -1, dim) # out的shape是[batch,step*token_num,dim]
         out = out.transpose(1, 2)
         out = nn.AdaptiveAvgPool1d(1)(out) # AdaptiveAvgPool1d是自适应平均池化层，输出的形状是[batch,dim,1]
         out = out.squeeze(2)
@@ -305,7 +303,7 @@ class TokenTuringMachineEncoder(nn.Module):
         return self.cls(out), memory_tokens # 原来是正常的out和 memory_tokens
 
 # if __name__ == "__main__":
-#     inputs = torch.randn(batch_size, step, 1, 28, 28).cuda() # [bs, step, c, h, w]
+#     inputs = torch.randn(config["batch_size"], step, 1, 28, 28).cuda() # [bs, step, c, h, w]
 #     model = TokenTuringMachineEncoder().cuda()
 #     out, mem = model(inputs)
 #     print(out.shape)

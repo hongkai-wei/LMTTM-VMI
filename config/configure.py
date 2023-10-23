@@ -22,6 +22,23 @@ class Config:
             self.__loadConfig(os.path.join(os.path.dirname(__file__), "base.json"))#__file__在Python里面是指当前文件的文件名
             if config_file != "base.json":
                 self.__loadConfig(os.path.join(os.path.dirname(__file__), config_file))
+            
+            self.__convert_key()
+            
+    
+    def __convert_key(self, key, value):
+        if isinstance(value, dict):
+            for sub_key in value:
+                self.__convert_key(key + "." + sub_key, value[sub_key])
+        else:
+            self.set(key, value)
+
+    def convert_key(self):
+        for key in self.__config:
+            self.__convert_key(key, self.__config[key])
+
+        
+         
 
     def __loadConfig(self, config_file):
         assert os.path.exists(config_file), "The configure file does not exist!"

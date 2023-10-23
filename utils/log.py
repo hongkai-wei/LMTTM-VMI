@@ -8,8 +8,8 @@ if os.path.exists(log) == False:
 
 class logger():
     def __init__(self, name) -> None:
-        log_dir = os.path.join(log, name)
-        self.writer = SummaryWriter(log_dir=log_dir)
+        self.log_dir = os.path.join(log, name)
+        self.writer = SummaryWriter(log_dir=self.log_dir)
 
     def get(self):
         return self.writer
