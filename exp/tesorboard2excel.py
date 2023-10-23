@@ -1,7 +1,3 @@
-'''
-只需要改path为你tensorbarod生成的event即可
-调用：  export(tag_names, "要生产的xlsx名字，后缀名不要写错了")
-'''
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -12,12 +8,12 @@ import tqdm
 from config import Config
 import os
 
-config = Config.getInstance("best_dim.json")
-name = config["train"]["name"]
+json_path = sys.argv[1]
+config = Config.getInstance(json_path)
 
 import os
 
-path1 = rf".\logs\{name}_test"
+path1 = rf".\logs\{config['train']['name']}_test"
 directory1 = path1
 file_paths1 = []
 for root, dirs, files1 in os.walk(directory1):
@@ -25,7 +21,7 @@ for root, dirs, files1 in os.walk(directory1):
         file_path1 = os.path.join(root, file1)
         file_paths1.append(file_path1)
 
-path2 = rf".\logs\{name}_train"
+path2 = rf".\logs\{config['train']['name']}_train"
 directory2 = path2
 file_paths2 = []
 for root, dirs, files2 in os.walk(directory2):
@@ -67,23 +63,25 @@ def export2(tag_list, excel_path):
 
 
 if __name__ == "__main__":
-    xlsx1 = rf".\logs_excel\{name}_test\{name}_test.xlsx"
-    xlsx2 = rf".\logs_excel\{name}_train\{name}_train.xlsx"
-    
+    xlsx1 = rf".\logs_excel\{config['train']['name']}_test\{config['train']['name']}_test.xlsx"
+    xlsx2 = rf".\logs_excel\{config['train']['name']}_train\{config['train']['name']}_train.xlsx"
+
+########################################### for tensorboard to excel, if upload this code, please delete this block code
     if os.path.exists("./logs_excel"):
         pass
     else:
         os.mkdir("./logs_excel")
 
-    if os.path.exists(f"./logs_excel/{name}_test"):
+    if os.path.exists(f"./logs_excel/{config['train']['name']}_test"):
         pass
     else:
-        os.mkdir(f"./logs_excel/{name}_test")
+        os.mkdir(f"./logs_excel/{config['train']['name']}_test")
 
-    if os.path.exists(f"./logs_excel/{name}_train"):
+    if os.path.exists(f"./logs_excel/{config['train']['name']}_train"):
         pass
     else:
-        os.mkdir(f"./logs_excel/{name}_train")
+        os.mkdir(f"./logs_excel/{config['train']['name']}_train")
+###########################################
 
     export1(tag_names1, xlsx1)
     export2(tag_names2, xlsx2)
