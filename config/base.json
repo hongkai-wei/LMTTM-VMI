@@ -17,9 +17,9 @@
         "step": 28,
         "out_class_num": 11,
         "patch_size": 3,
-        "Read_use_positional_embedding": "False",
-        "Write_use_positional_embedding": "True",
-        "load_memory_add_noise": "True",
+        "Read_use_positional_embedding": false,
+        "Write_use_positional_embedding": true,
+        "load_memory_add_noise": true,
         "load_memory_add_noise_mode": "laplace",
         "all_load_memory_add_noise_mode": "uniform, laplace, normal, exp, gamma, poisson"
     },
@@ -29,7 +29,7 @@
         "optimizer": "Adam",
         "lr": 0.001,
         "weight_decay": 0.001,
-        "load_memory_tokens": "True",
+        "load_memory_tokens": true,
         "val_gap": 100
     }
 }
