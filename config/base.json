@@ -2,6 +2,8 @@
     "batch_size": 48,
     "dataset_name": "organmnist3d",
     "root": "./datasets_data/medmnist",
+    "log_dir": "./logs",
+    "checkpoint_dir": "./checkpoints",
     "model": {
         "drop_r": 0.2,
         "process_unit": "transformer",
