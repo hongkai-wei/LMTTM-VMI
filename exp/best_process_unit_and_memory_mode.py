@@ -16,7 +16,7 @@ exp_json = "best_process_unit_and_memory_mode.json"
 def run_exp(exp_json):
     os.system("python exp\\train_continual.py " + exp_json)
     os.system("python exp\\predict_continual.py " + exp_json)
-    os.system("python exp\\tesorboard2excel.py " + exp_json)
+    # os.system("python exp\\tesorboard2excel.py " + exp_json)
 
 train_config = {
     "name": ["exp1_MHA_transformer","exp2_AddErase_transformer","exp3_TL_transformer",

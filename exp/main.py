@@ -27,9 +27,8 @@ if __name__ == "__main__":
             data = json.load(file)
 
         data['train']['name'] = train_config["name"][i]
-        data['model']['Read_use_positional_embedding'] = train_config["read_use_positional_embedding"][i]
-        data['model']['Write_use_positional_embedding'] = train_config["write_use_positional_embedding"][i]
-
+        data['model']['variant'] = train_config["variant"][i]
+        
         with open(f'./config/{exp_json}', 'w') as file:
             json.dump(data, file, indent=4)
         

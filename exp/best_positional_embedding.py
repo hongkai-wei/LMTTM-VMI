@@ -4,10 +4,10 @@ import json
 '''
 Explanation:
 This script selects the best model for positional_embedding.
-According to the results, exp2 has the best result, and we choose exp2 as the optimal model parameter.
+According to the results, exp1 has the best result, and we choose exp1 as the optimal model parameter.
 
 The best parameter:
-                    positional_embedding: Read_use_positional_embedding
+                    positional_embedding: None_positional_embedding
 '''
 exp_json = "best_positional_embedding.json"
 

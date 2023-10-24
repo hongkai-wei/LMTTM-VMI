@@ -1,9 +1,9 @@
 {
     "model": {
-        "Read_use_positional_embedding": true,
-        "Write_use_positional_embedding": true
+        "Read_use_positional_embedding": false,
+        "Write_use_positional_embedding": false
     },
     "train": {
-        "name": "exp4_ReadWrite_positional_embedding"
+        "name": "exp1_None_positional_embedding"
     }
 }
