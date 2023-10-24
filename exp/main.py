@@ -2,9 +2,35 @@ import os
 import json
 
 '''
-Create a main.py file under exp as a basic model for finding different high-parameter experiments
-'''
+Explanation:
+This script selects the best model for variant.
+According to the results, exp has the best result, and we choose exp as the optimal model parameter.
 
-os.system("python exp\\train_continual.py best_process_unit_and_memory_mode.json ")
-os.system("python exp\\predict_continual.py best_process_unit_and_memory_mode.json")
-os.system("python exp\\tesorboard2excel.py best_process_unit_and_memory_mode.json")
+The best parameter:
+                    variant: variant
+'''
+exp_json = "base.json"
+
+def run_exp(exp_json):
+    os.system("python exp\\train_continual.py " + exp_json)
+    os.system("python exp\\predict_continual.py " + exp_json)
+    os.system("python exp\\tesorboard2excel.py " + exp_json)
+
+train_config = {
+    "name": ["exp_variant"],
+    "variant":["variant"]
+}
+
+if __name__ == "_main_":
+    for i in range(len(train_config["name"])):
+        with open('./config/{exp_json}', 'r') as file:
+            data = json.load(file)
+
+        data['train']['name'] = train_config["name"][i]
+        data['model']['Read_use_positional_embedding'] = train_config["read_use_positional_embedding"][i]
+        data['model']['Write_use_positional_embedding'] = train_config["write_use_positional_embedding"][i]
+
+        with open('./config/{exp_json}', 'w') as file:
+            json.dump(data, file, indent=4)
+        
+        run_exp(exp_json)

@@ -9,7 +9,12 @@ According to the results, exp2 has the best result, and we choose exp2 as the op
 The best parameter:
                     positional_embedding: Read_use_positional_embedding
 '''
+exp_json = "best_positional_embedding.json"
 
+def run_exp(exp_json):
+    os.system("python exp\\train_continual.py " + exp_json)
+    os.system("python exp\\predict_continual.py " + exp_json)
+    os.system("python exp\\tesorboard2excel.py " + exp_json)
 
 train_config = {
     "name": ["exp1_None_positional_embedding", "exp2_Read_positional_embedding", "exp3_Write_positional_embedding", "exp4_ReadWrite_positional_embedding"],
@@ -18,16 +23,15 @@ train_config = {
 }
 
 for i in range(len(train_config["name"])):
-    with open('./config/best_positional_embedding.json', 'r') as file:
+
+    with open(f'./config/{exp_json}', 'r') as file:
         data = json.load(file)
 
     data['train']['name'] = train_config["name"][i]
     data['model']['Read_use_positional_embedding'] = train_config["read_use_positional_embedding"][i]
     data['model']['Write_use_positional_embedding'] = train_config["write_use_positional_embedding"][i]
 
-    with open('./config/best_positional_embedding.json', 'w') as file:
+    with open(f'./config/{exp_json}', 'w') as file:
         json.dump(data, file, indent=4)
 
-    os.system("python exp\\train_continual.py best_positional_embedding.json ")
-    os.system("python exp\\predict_continual.py best_positional_embedding.json")
-    os.system("python exp\\tesorboard2excel.py best_positional_embedding.json")
+    run_exp(exp_json)
