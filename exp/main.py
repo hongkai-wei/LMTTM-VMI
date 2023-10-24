@@ -18,8 +18,8 @@ def run_exp(exp_json):
 
 train_config = {
     "name": ["exp_variant1","exp_variant2","exp_variant3"],
+
     "variant":["variant1","variant2","variant3"]
-}
 
 if __name__ == "__main__":
     for i in range(len(train_config["name"])):
@@ -28,7 +28,7 @@ if __name__ == "__main__":
 
         data['train']['name'] = train_config["name"][i]
         data['model']['variant'] = train_config["variant"][i]
-        
+
         with open(f'./config/{exp_json}', 'w') as file:
             json.dump(data, file, indent=4)
         
