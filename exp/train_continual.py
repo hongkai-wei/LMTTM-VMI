@@ -14,8 +14,8 @@ json_path = sys.argv[1]
 config = Config.getInstance(json_path)
 
 log_writer = logger(config['train']["name"] + "_train")()
+#
 
-########################################### for train, if upload this code, please delete this block code
 if not os.path.exists("./check_point"):
     os.mkdir("./check_point")
 checkpoint_path = f"./check_point/{config['train']['name']}"
@@ -23,7 +23,7 @@ if os.path.exists(checkpoint_path):
     pass
 else:
     os.mkdir(checkpoint_path)
-############################################
+#
 
 transform_train = Compose([
     ShuffleTransforms(mode="CWH")
