@@ -12,8 +12,8 @@ The best parameter:
 exp_json = "best_positional_embedding.json"
 
 def run_exp(exp_json):
-    os.system("python exp\\train_continual.py " + exp_json)
-    os.system("python exp\\predict_continual.py " + exp_json)
+    # os.system("python exp\\train_continual.py " + exp_json)
+    # os.system("python exp\\predict_continual.py " + exp_json)
     os.system("python exp\\tesorboard2excel.py " + exp_json)
 
 train_config = {
