@@ -96,7 +96,10 @@ def train():
                     model.eval()
                     val_x = val_x.to("cuda", dtype=torch.float32)
                     val_y = val_y.to("cuda", dtype=torch.long)
-                    out, memory_tokens = model(val_x, memory_tokens)
+                    if (config['train']["load_memory_tokens"] == "True"):
+                        out, memory_tokens = model(val_x, memory_tokens)
+                    else:
+                        out, memory_tokens = model(val_x, memory_tokens = None)
                     out = torch.argmax(out, dim=1)
                     val_y = val_y.squeeze(1)
                     all = val_y.size(0)
@@ -104,7 +107,7 @@ def train():
                     val_acc = (result/all)*100
                     log_writer.add_scalar("val acc", val_acc, val_acc_nums)
                     val_acc_nums += 1
-            # 保存后面50个epoch的模型
+            # Save the model for the next 50 epochs
 
         if _ >= (config['train']["epoch"]-50):
             save_name = f"./check_point/{config['train']['name']}/{config['train']['name']}_epoch_{_ -config['train']['epoch'] + 51}.pth"
@@ -125,9 +128,10 @@ def train():
 
     experiment_path = "./experiment/experiment_record.txt"
 
-    # 打开文件，以追加模式写入数据
+    # Open a file and write data in append mode
     with open(experiment_path, "a") as file:
-        # 将print的数据重定向到文件中
+        # Redirecting data from print to file
         print(f"{config['train']['name']} convergence_batch: {convergence_batch} , train_loss: {final_save_loss}", file=file)
 
-train()
+if __name__ == "__main__":
+    train()
