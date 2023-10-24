@@ -20,11 +20,11 @@
         "Read_use_positional_embedding": false,
         "Write_use_positional_embedding": false,
         "load_memory_add_noise": false,
-        "load_memory_add_noise_mode": "laplace",
-        "all_load_memory_add_noise_mode": "uniform, laplace, normal, exp, gamma, poisson"
+        "load_memory_add_noise_mode": "None",
+        "all_load_memory_add_noise_mode": "None, uniform, laplace, normal, exp, gamma, poisson"
     },
     "train": {
-        "name": "TTM_MHA_transformer_WritePosition_Load_laplace_mem8192_tokens64",
+        "name": "TTM_base",
         "epoch": 500,
         "optimizer": "Adam",
         "lr": 0.001,
