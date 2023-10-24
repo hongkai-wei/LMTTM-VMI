@@ -19,7 +19,7 @@
         "patch_size": 3,
         "Read_use_positional_embedding": false,
         "Write_use_positional_embedding": false,
-        "load_memory_add_noise": true,
+        "load_memory_add_noise": false,
         "load_memory_add_noise_mode": "laplace",
         "all_load_memory_add_noise_mode": "uniform, laplace, normal, exp, gamma, poisson"
     },

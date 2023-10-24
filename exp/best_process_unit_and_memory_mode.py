@@ -11,8 +11,6 @@ The best parameter:
                     memory_mode: TL-MHA
 '''
 
-
-
 exp_json = "best_process_unit_and_memory_mode.json"
 
 def run_exp(exp_json):
@@ -47,4 +45,3 @@ if __name__ == "__main__":
             json.dump(data, file, indent=4)
         
         run_exp(exp_json)
-
