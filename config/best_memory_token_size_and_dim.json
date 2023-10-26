@@ -1,11 +1,11 @@
 {
-    "batch_size":96,
+    "batch_size": 96,
     "model": {
-        "dim": 96,
+        "dim": 128,
         "memory_tokens_size": 128
     },
     "train": {
-        "name": "exp1_None_positional_embedding",
+        "name": "exp2_memory128_and_dim128",
         "epoch": 500
     }
 }
