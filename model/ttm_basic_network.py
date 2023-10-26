@@ -7,12 +7,12 @@ from .tokenLearner_network import TokenLearnerModuleV11
 from config.configure import Config
 import numpy as np
 
-config = Config.getInstance()
+
 
 class PreProcess(nn.Module): 
     # Input：Batch,Channels,Step,H,W  
     # Output：Batch，Step，Tokens，Channels
-    def __init__(self) -> None:
+    def __init__(self,config) -> None:
         super(PreProcess, self).__init__()
         self.conv = nn.Conv3d(in_channels=config["model"]["in_channels"], 
                              out_channels=config["model"]["dim"],
@@ -30,7 +30,7 @@ class PreProcess(nn.Module):
         return x
     
 class PreProcessV2(nn.Module):
-    def __init__(self, patch_t=3, patch_h=3, patch_w=3) -> None:
+    def __init__(self, config,patch_t=3, patch_h=3, patch_w=3) -> None:
         super(PreProcessV2, self).__init__()
         self.lay = nn.Sequential(Rearrange('b c (t pt) (h ph) (w pw) -> b t (h w) (pt ph pw c)', 
                                             pt=patch_t, ph=patch_h, pw=patch_w),
@@ -41,7 +41,7 @@ class PreProcessV2(nn.Module):
         return x
 
 class TokenLearnerMHA(nn.Module):
-    def __init__(self, output_tokens) -> None:
+    def __init__(self, output_tokens,config) -> None:
         super(TokenLearnerMHA, self).__init__()
         self.query = nn.Parameter(torch.randn(config["batch_size"], output_tokens, config["model"]["dim"]).cuda())
         self.attn = nn.MultiheadAttention(embed_dim=config["model"]["dim"], num_heads=8, dropout=0.1, batch_first=True)
@@ -51,7 +51,7 @@ class TokenLearnerMHA(nn.Module):
         return self.attn(self.query, input, input)[0]
 
 class TokenAddEraseWrite(nn.Module):
-    def __init__(self) -> None:
+    def __init__(self,config) -> None:
         super(TokenAddEraseWrite, self).__init__()
         self.mlp_block1 = nn.Sequential(nn.LayerNorm(config["model"]["dim"]), 
                                            nn.Linear(config["model"]["dim"], 3*config["model"]["dim"]), 
@@ -113,14 +113,14 @@ class TokenAddEraseWrite(nn.Module):
 
 
 class TokenTuringMachineUnit(nn.Module):
-    def __init__(self) -> None:
+    def __init__(self,config) -> None:
         super(TokenTuringMachineUnit, self).__init__()
         self.tokenLearner1 = TokenLearnerModuleV11(in_channels=config["model"]["dim"], num_tokens=config["model"]["num_tokens"], num_groups=1)
         self.tokenLearner2 = TokenLearnerModuleV11(in_channels=config["model"]["dim"], num_tokens=config["model"]["memory_tokens_size"], num_groups=1)
         self.transformerBlock = nn.TransformerEncoderLayer(d_model=config["model"]["dim"], nhead=8, dim_feedforward=config["model"]["dim"] * 3, dropout=0.2)
-        self.tokenLearnerMHA1 = TokenLearnerMHA(config["model"]["num_tokens"])
-        self.tokenLearnerMHA2 = TokenLearnerMHA(config["model"]["memory_tokens_size"])
-        self.tokenAddEraseWrite = TokenAddEraseWrite()
+        self.tokenLearnerMHA1 = TokenLearnerMHA(config["model"]["num_tokens"],config)
+        self.tokenLearnerMHA2 = TokenLearnerMHA(config["model"]["memory_tokens_size"],config)
+        self.tokenAddEraseWrite = TokenAddEraseWrite(config)
         self.mlpBlock = nn.Sequential(nn.LayerNorm(config["model"]["dim"]),
                                  nn.Linear(config["model"]["dim"], config["model"]["dim"]*3),
                                  nn.Dropout(config["model"]["drop_r"]),
@@ -141,28 +141,29 @@ class TokenTuringMachineUnit(nn.Module):
                                                    nn.Linear(config["model"]["dim"] * 3, config["model"]["dim"]),
                                                    nn.GELU())
         self.dropout = nn.Dropout(config["model"]["drop_r"])
+        self.config = config
 
     def forward(self, memory_tokens, input_tokens):
         all_tokens = torch.cat((memory_tokens, input_tokens), dim=1)
         # Read add posiutional
-        if config["model"]["Read_use_positional_embedding"]:
+        if self.config["model"]["Read_use_positional_embedding"]:
             all_tokens = all_tokens.cuda()
             posemb_init = torch.nn.Parameter(torch.empty(
                 1, all_tokens.size(1), all_tokens.size(2))).cuda()
             init.normal_(posemb_init, std=0.02)
             all_tokens = all_tokens + posemb_init
 
-        if config["model"]["memory_mode"] == 'TL' or config["model"]["memory_mode"] == 'TL-AddErase':
+        if self.config["model"]["memory_mode"] == 'TL' or self.config["model"]["memory_mode"] == 'TL-AddErase':
             all_tokens=self.tokenLearner1(all_tokens)
-        elif config["model"]["memory_mode"] == 'TL-MHA':
+        elif self.config["model"]["memory_mode"] == 'TL-MHA':
             all_tokens=self.tokenLearnerMHA1(all_tokens)
 
-        if config["model"]["process_unit"] == 'transformer':
+        if self.config["model"]["process_unit"] == 'transformer':
             output_tokens = all_tokens
             for _ in range(self.num_layers):
                 output_tokens = self.transformerBlock(output_tokens)
 
-        elif config["model"]["process_unit"] == 'mixer':
+        elif self.config["model"]["process_unit"] == 'mixer':
             output_tokens = all_tokens # all_tokens shape is [batch,mem_size+special_num_token,config["model"]["dim"]]
             for _ in range(self.num_layers):
                 # Token mixing，different token interoperability
@@ -181,7 +182,7 @@ class TokenTuringMachineUnit(nn.Module):
                 output_tokens = output_tokens + y_output_tokens
             output_tokens = self.norm(output_tokens)
         
-        elif config["model"]["process_unit"] == 'mlp':
+        elif self.config["model"]["process_unit"] == 'mlp':
             output_tokens = all_tokens
             for _ in range(self.num_layers):
                 output_tokens = self.norm(output_tokens)
@@ -191,7 +192,7 @@ class TokenTuringMachineUnit(nn.Module):
         memory_input_tokens = torch.cat((memory_tokens, input_tokens, output_tokens), dim=1)
 
         # Write add posiutional
-        if config["model"]["Write_use_positional_embedding"]:
+        if self.config["model"]["Write_use_positional_embedding"]:
             memory_input_tokens = memory_input_tokens.cuda()
             posemb_init = torch.nn.Parameter(torch.empty(
                 1, memory_input_tokens.size(1), memory_input_tokens.size(2))).cuda()
@@ -199,32 +200,33 @@ class TokenTuringMachineUnit(nn.Module):
             # mem_out_tokens shape is [batch,mem_size+special_num_token,config["model"]["dim"]]
             memory_input_tokens = memory_input_tokens + posemb_init
 
-        if config["model"]["memory_mode"] == 'TL':
+        if self.config["model"]["memory_mode"] == 'TL':
             memory_output_tokens = self.tokenLearner2(memory_input_tokens)
-        elif config["model"]["memory_mode"] == 'TL-MHA':
+        elif self.config["model"]["memory_mode"] == 'TL-MHA':
             memory_output_tokens = self.tokenLearnerMHA2(memory_input_tokens)
-        elif config["model"]["memory_mode"] == 'TL-AddErase':
+        elif self.config["model"]["memory_mode"] == 'TL-AddErase':
             memory_output_tokens = self.tokenAddEraseWrite(memory_input_tokens,output_tokens)
         
         return (memory_output_tokens,output_tokens)
 
 
 class TokenTuringMachineEncoder(nn.Module):
-    def __init__(self) -> None:
+    def __init__(self,config) -> None:
         super(TokenTuringMachineEncoder, self).__init__()
         self.memory_tokens = torch.zeros(config["batch_size"], config["model"]["memory_tokens_size"], config["model"]["dim"]).cuda()
-        self.tokenTuringMachineUnit = TokenTuringMachineUnit()
+        self.tokenTuringMachineUnit = TokenTuringMachineUnit(config)
         self.cls = nn.Linear(config["model"]["dim"], config["model"]["out_class_num"])
-        self.pre = PreProcess()
-        self.preV2 = PreProcessV2()
+        self.pre = PreProcess(config)
+        self.preV2 = PreProcessV2(config)
         self.relu = nn.ReLU()
+        self.config = config
 
     def forward(self, input, memory_tokens):
         input = self.pre(input)
         b, t, _, c = input.shape
         outs=[]
         if memory_tokens == None:
-            memory_tokens = torch.zeros(b,config["model"]["memory_tokens_size"],c).cuda() #  c, h, w
+            memory_tokens = torch.zeros(b,self.config["model"]["memory_tokens_size"],c).cuda() #  c, h, w
         else:
             memory_tokens = memory_tokens.detach()
         for i in range(t):
@@ -233,34 +235,34 @@ class TokenTuringMachineEncoder(nn.Module):
 
         
         outs = torch.stack(outs, dim=1)
-        out = outs.view(config["batch_size"], -1, config["model"]["dim"])
+        out = outs.view(self.config["batch_size"], -1, self.config["model"]["dim"])
         out = out.transpose(1, 2)
         out = nn.AdaptiveAvgPool1d(1)(out) 
         out = out.squeeze(2)
         # print(out.shape)
 
-        if config["model"]["load_memory_add_noise"]:
-            if config["model"]["load_memory_add_noise_mode"] == "normal":
+        if self.config["model"]["load_memory_add_noise"]:
+            if self.config["model"]["load_memory_add_noise_mode"] == "normal":
                 noise = torch.randn_like(memory_tokens)
                 noise = noise.cuda()
                 noise_rate = 0.3
                 memory_tokens = memory_tokens + noise_rate * noise
-            elif config["model"]["load_memory_add_noise_mode"] == "laplace":
+            elif self.config["model"]["load_memory_add_noise_mode"] == "laplace":
                 noise = torch.distributions.laplace.Laplace(loc = 10, scale = 10).sample(memory_tokens.size())
                 noise = noise.cuda()
                 noise_rate = 0.3
                 memory_tokens = memory_tokens + noise*noise_rate
-            elif config["model"]["load_memory_add_noise_mode"] == "uniform":
+            elif self.config["model"]["load_memory_add_noise_mode"] == "uniform":
                 noise = torch.FloatTensor(memory_tokens.size()).uniform_(-0.5, 0.5)
                 noise = noise.cuda()
                 noise_rate = 0.3
                 memory_tokens = memory_tokens + noise*noise_rate
-            elif config["model"]["load_memory_add_noise_mode"] == "exp":
+            elif self.config["model"]["load_memory_add_noise_mode"] == "exp":
                 noise = torch.empty(memory_tokens.size()).exponential_()
                 noise = noise.cuda()
                 noise_rate = 0.3
                 memory_tokens = memory_tokens + noise*noise_rate
-            elif config["model"]["load_memory_add_noise_mode"] == "gamma":
+            elif self.config["model"]["load_memory_add_noise_mode"] == "gamma":
                 shape = torch.tensor([2.0])  # Shape parameters of the Gamma distribution
                 scale = torch.tensor([2.0])  # Scale parameters of the Gamma distribution
                 noise = torch.empty(memory_tokens.size())  # Create the same empty tensor as the noise tensor
@@ -268,7 +270,7 @@ class TokenTuringMachineEncoder(nn.Module):
                 noise.copy_(torch.from_numpy(np.random.gamma(shape.item(), scale.item(), size=noise.size())))  # 将正态分布随机数转化为Gamma分布随机数
                 noise_rate = 0.3
                 memory_tokens = memory_tokens + noise*noise_rate
-            elif config["model"]["load_memory_add_noise_mode"] == "poisson":
+            elif self.config["model"]["load_memory_add_noise_mode"] == "poisson":
                 rate = torch.tensor([2.0])  # Parameters of the Poisson distribution
                 noise = torch.poisson(rate.expand(memory_tokens.size()))  # Generating Poisson distributed noise
                 noise = noise.float()

@@ -24,24 +24,25 @@ train_config = {
              "exp7_memory512_and_dim64", "exp8_memory512_and_dim128", "exp9_memory512_and_dim256",
              "exp10_memory1024_and_dim64", "exp11_memory1024_and_dim128", "exp12_memory1024_and_dim256",],
 
-    "memory_tokens_size":[128, 128, 128, 256, 256, 256, 512, 512, 512, 1024, 1024, 1024],
-    "dim":[64, 128, 256, 64, 128, 256, 64, 128, 256, 64, 128, 256],
-    "batch_size":[96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96],
-    "epoch":[1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200,]
+    "memory_tokens_size":[128, 128, 128, 256, 256, 256, 512, 512, 512, 1024, 1024, 2048],
+    "dim":[64, 128, 256, 64, 128, 256, 64, 128, 256, 64, 128, 512],
+    "batch_size":[96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 16],
+    "epoch":[1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200]
 }
 
 if __name__ == "__main__":
     for i in range(len(train_config["name"])):
-        with open(f'./config/{exp_json}', 'r') as file:
-            data = json.load(file)
+        if i ==11:
+            with open(f'./config/{exp_json}', 'r') as file:
+                data = json.load(file)
 
-        data['train']['name'] = train_config["name"][i]
-        data['model']['memory_tokens_size'] = train_config["memory_tokens_size"][i]
-        data['model']['dim'] = train_config["dim"][i]
-        data['batch_size'] = train_config["batch_size"][i]
-        data['train']['epoch'] = train_config["epoch"][i]
+            data['train']['name'] = train_config["name"][i]
+            data['model']['memory_tokens_size'] = train_config["memory_tokens_size"][i]
+            data['model']['dim'] = train_config["dim"][i]
+            data['batch_size'] = train_config["batch_size"][i]
+            data['train']['epoch'] = train_config["epoch"][i]
 
-        with open(f'./config/{exp_json}', 'w') as file:
-            json.dump(data, file, indent=4)
-        
-        run_exp(exp_json)
+            with open(f'./config/{exp_json}', 'w') as file:
+                json.dump(data, file, indent=4)
+            
+            run_exp(exp_json)

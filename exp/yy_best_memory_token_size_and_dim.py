@@ -14,9 +14,9 @@ The best parameter:
 exp_json = "best_memory_token_size_and_dim.json"
 
 def run_exp(exp_json):
-    os.system("python exp\\train_continual.py " + exp_json)
-    os.system("python exp\\predict_continual.py " + exp_json)
-    # os.system("python exp\\tesorboard2excel.py " + exp_json)
+    os.system("E:/ANG/Anaconda3/envs/env1/python.exe exp\\train_continual.py " + exp_json)
+    os.system("E:/ANG/Anaconda3/envs/env1/python.exe exp\\predict_continual.py " + exp_json)
+    # os.system("E:/ANG/Anaconda3/envs/env1/python.exe exp\\tesorboard2excel.py " + exp_json)
 
 train_config = {
     "name": ["exp4_memory256_and_dim64", "exp5_memory256_and_dim128", "exp6_memory256_and_dim256",

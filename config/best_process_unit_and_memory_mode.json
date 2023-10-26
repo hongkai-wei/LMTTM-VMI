@@ -1,11 +1,11 @@
 {
     "model": {
-        "process_unit": "transformer",
+        "process_unit": "mixer",
         "all_process_unit": "mlp, mixer,transformer",
-        "memory_mode": "TL-MHA",
+        "memory_mode": "TL",
         "all_memory_mode": "TL-MHA, TL-AddErase, TL"
     },
     "train": {
-        "name": "exp1_MHA_transformer"
+        "name": "newexp9_TL_mixer"
     }
 }
