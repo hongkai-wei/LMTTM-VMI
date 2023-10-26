@@ -34,8 +34,9 @@ transform_val = Compose([
     ShuffleTransforms(mode="CWH")
 ])
 
-data_train = get_dataloader("train",config=config ,download=False, transform=transform_train)
-data_val = get_dataloader("val",config=config,download=False, transform=transform_val)
+data_train = get_dataloader("train",config = config, download = True, transform=transform_train)
+data_val = get_dataloader("val",config = config, download = True, transform=transform_val)
+
 
 def train():
     

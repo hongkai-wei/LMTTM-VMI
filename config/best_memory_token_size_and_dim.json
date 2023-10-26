@@ -1,4 +1,5 @@
 {
+
     "batch_size":32 ,
     "model": {
         "dim": 256,
@@ -7,5 +8,6 @@
     "train": {
         "name": "exp12_memory1024_and_dim256",
         "epoch": 1200
+
     }
 }

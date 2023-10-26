@@ -35,14 +35,17 @@ train_config = {
 
     "memory_tokens_size":[128, 128, 128, 1024, 1024, 1024],
     "dim":[64, 128, 256, 64, 128, 256],
+
     "batch_size":[96, 96, 96, 96, 96, 16],
     "epoch":[1200, 1200, 1200, 1200, 1200, 1200]
+
 }
 
 if __name__ == "__main__":
     for i in range(len(train_config["name"])):
+      
         with open(f'./config/{exp_json}', 'r') as file:
-            if i ==  5:
+    
                 data = json.load(file)
 
                 data['train']['name'] = train_config["name"][i]
