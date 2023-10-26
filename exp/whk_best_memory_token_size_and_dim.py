@@ -13,7 +13,18 @@ The best parameter:
 '''
 exp_json = "best_memory_token_size_and_dim.json"
 
+import os
+
 def run_exp(exp_json):
+    """
+    Runs a PyTorch experiment using the specified JSON configuration file.
+
+    Args:
+        exp_json (str): The filepath of the JSON configuration file.
+
+    Returns:
+        None
+    """
     os.system("python exp\\train_continual.py " + exp_json)
     os.system("python exp\\predict_continual.py " + exp_json)
     # os.system("python exp\\tesorboard2excel.py " + exp_json)
@@ -24,22 +35,23 @@ train_config = {
 
     "memory_tokens_size":[128, 128, 128, 1024, 1024, 1024],
     "dim":[64, 128, 256, 64, 128, 256],
-    "batch_size":[96, 96, 96, 96, 96, 96],
+    "batch_size":[96, 96, 96, 96, 96, 16],
     "epoch":[1200, 1200, 1200, 1200, 1200, 1200]
 }
 
 if __name__ == "__main__":
     for i in range(len(train_config["name"])):
         with open(f'./config/{exp_json}', 'r') as file:
-            data = json.load(file)
+            if i ==  5:
+                data = json.load(file)
 
-        data['train']['name'] = train_config["name"][i]
-        data['model']['memory_tokens_size'] = train_config["memory_tokens_size"][i]
-        data['model']['dim'] = train_config["dim"][i]
-        data['batch_size'] = train_config["batch_size"][i]
-        data['train']['epoch'] = train_config["epoch"][i]
+                data['train']['name'] = train_config["name"][i]
+                data['model']['memory_tokens_size'] = train_config["memory_tokens_size"][i]
+                data['model']['dim'] = train_config["dim"][i]
+                data['batch_size'] = train_config["batch_size"][i]
+                data['train']['epoch'] = train_config["epoch"][i]
 
-        with open(f'./config/{exp_json}', 'w') as file:
-            json.dump(data, file, indent=4)
-        
-        run_exp(exp_json)
+                with open(f'./config/{exp_json}', 'w') as file:
+                    json.dump(data, file, indent=4)
+                
+                run_exp(exp_json)#

@@ -10,7 +10,9 @@ import torch
 import tqdm
 from utils.video_transforms import *
 
-json_path = sys.argv[1]
+# json_path = sys.argv[1]
+json_path = "best_memory_token_size_and_dim.json"
+
 config = Config.getInstance(json_path)
 
 log_writer = logger(config['train']["name"] + "_train")()
@@ -32,13 +34,13 @@ transform_val = Compose([
     ShuffleTransforms(mode="CWH")
 ])
 
-data_train = get_dataloader("train", download=True, transform=transform_train)
-data_val = get_dataloader("val", download=transform_val)
+data_train = get_dataloader("train",config=config ,download=False, transform=transform_train)
+data_val = get_dataloader("val",config=config,download=False, transform=transform_val)
 
 def train():
     
     memory_tokens = None
-    model = TokenTuringMachineEncoder().cuda()
+    model = TokenTuringMachineEncoder(config).cuda()
 
     if config['train']["optimizer"] == "RMSprop":
         optimizer = torch.optim.RMSprop(
@@ -69,7 +71,7 @@ def train():
             input = input.to("cuda", dtype=torch.float32)  # B C T H W
             target = target.to("cuda", dtype=torch.long)  # B 1
             target = target.squeeze(1)  # B 1
-            if (config['train']["load_memory_tokens"] == "True"):
+            if (config['train']["load_memory_tokens"]):
                 output, memory_tokens = model(input, memory_tokens)
             else:
                 output, memory_tokens = model(input, memory_tokens = None)

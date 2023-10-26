@@ -1,5 +1,5 @@
 {
-    "batch_size": 96,
+    "batch_size": 48,
     "dataset_name": "organmnist3d",
     "root": "./datasets_data/medmnist",
     "log_dir": "./logs",
@@ -11,8 +11,8 @@
         "memory_mode": "TL-MHA",
         "all_memory_mode": "TL-MHA, TL-AddErase, TL",
         "in_channels": 1,
-        "dim": 96,
-        "memory_tokens_size": 128,
+        "dim": 128,
+        "memory_tokens_size": 256,
         "num_tokens": 8,
         "step": 28,
         "out_class_num": 11,
