@@ -12,16 +12,14 @@ import torch
 import tqdm
 import os
 from utils.video_transforms import *
-
 json_path = sys.argv[1]
 config = Config.getInstance(json_path)
-
-log_writer = logger(config["train"]["name"] + "_test")()
-
 transform_test = Compose([
     ShuffleTransforms(mode="CWH")
 ])
-data_test = get_dataloader("test", download =True, transform=transform_test)
+
+log_writer = logger(config["train"]["name"] + "_test")()
+data_test = get_dataloader("test", config=config, download=False, transform=transform_test)
 
 pth = f".\\check_point\\{config['train']['name']}\\"
 pth_files = [f"{pth}{config['train']['name']}_epoch_{i}.pth" for i in range(1, 51)] 
@@ -33,7 +31,7 @@ def predict():
         load_state = checkpoint["model"]
         load_memory_tokens = checkpoint["memory_tokens"]
         memory_tokens = load_memory_tokens
-        model = TokenTuringMachineEncoder().cuda()
+        model = TokenTuringMachineEncoder(config).cuda()
         model.load_state_dict(load_state)
 
         all_y = 0
@@ -43,7 +41,7 @@ def predict():
             x = x.to("cuda", dtype = torch.float32)
             y = y.to("cuda", dtype = torch.long)
 
-            if (config["train"]["load_memory_tokens"] == "True"):
+            if config["train"]["load_memory_tokens"]:
                 out, memory_tokens = model(x, memory_tokens)
             else:
                 out, memory_tokens = model(x, memory_tokens = None)
