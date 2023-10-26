@@ -20,6 +20,7 @@ train_config = {
     "name": ["exp_variant1","exp_variant2","exp_variant3"],
 
     "variant":["variant1","variant2","variant3"]
+}
 
 if __name__ == "__main__":
     for i in range(len(train_config["name"])):

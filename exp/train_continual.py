@@ -10,9 +10,7 @@ import torch
 import tqdm
 from utils.video_transforms import *
 import torch.nn as nn 
-# json_path = sys.argv[1]
-json_path = "best_memory_token_size_and_dim.json"
-
+json_path = sys.argv[1]
 config = Config.getInstance(json_path)
 
 log_writer = logger(config['train']["name"] + "_train")()
@@ -36,11 +34,12 @@ transform_val = Compose([
 
 data_train = get_dataloader("train",config=config ,download=False, transform=transform_train)
 data_val = get_dataloader("val",config=config,download=False, transform=transform_val)
-torch.manual_seed(42)
+
+torch.manual_seed(0)
+
 def init_weights(m):
     if isinstance(m, nn.Conv3d) or isinstance(m, nn.Linear) :
         nn.init.xavier_uniform_(m.weight)
-        nn.init.normal_(m.bias)
 
 def train():
     

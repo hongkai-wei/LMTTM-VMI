@@ -12,18 +12,17 @@ The best parameter:
 exp_json = "best_load_memory_add_noise_mode.json"
 
 def run_exp(exp_json):
-    os.system("python exp\\train_continual.py " + exp_json)
+    # os.system("python exp\\train_continual.py " + exp_json)
     os.system("python exp\\predict_continual.py " + exp_json)
     # os.system("python exp\\tesorboard2excel.py " + exp_json)
 
 train_config = {
-    "name": ["exp1_load_memory_add_noise_None", "exp1_load_memory_add_noise_uniform",
-             "exp1_load_memory_add_noise_laplace", "exp1_load_memory_add_noise_normal",
-             "exp1_load_memory_add_noise_exp", "exp1_load_memory_add_noise_gamma",
-             "exp1_load_memory_add_noise_poisson"],
+    "name": ["exp1_load_memory_add_noise_poisson", "exp2_load_memory_add_noise_uniform",
+             "exp3_load_memory_add_noise_laplace", "exp4_load_memory_add_noise_normal",
+             "exp5_load_memory_add_noise_exp", "exp6_load_memory_add_noise_gamma",],
 
-    "load_memory_add_noise":[False, True, True, True, True, True, True],
-    "load_memory_add_noise_mode":["None", "uniform", "laplace", "normal", "exp", "gamma", "poisson"]
+    "load_memory_add_noise":[True, True, True, True, True, True],
+    "load_memory_add_noise_mode":["poisson", "uniform", "laplace", "normal", "exp", "gamma"]
 }
 
 if __name__ == "__main__":

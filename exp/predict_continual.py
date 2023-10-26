@@ -12,6 +12,7 @@ import torch
 import tqdm
 import os
 from utils.video_transforms import *
+
 json_path = sys.argv[1]
 config = Config.getInstance(json_path)
 transform_test = Compose([
@@ -19,7 +20,7 @@ transform_test = Compose([
 ])
 
 log_writer = logger(config["train"]["name"] + "_test")()
-data_test = get_dataloader("test", config=config, download=False, transform=transform_test)
+data_test = get_dataloader("test", config = config, download = True, transform = transform_test)
 
 pth = f".\\check_point\\{config['train']['name']}\\"
 pth_files = [f"{pth}{config['train']['name']}_epoch_{i}.pth" for i in range(1, 51)] 

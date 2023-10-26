@@ -7,8 +7,6 @@ from .tokenLearner_network import TokenLearnerModuleV11
 from config.configure import Config
 import numpy as np
 
-
-
 class PreProcess(nn.Module): 
     # Input：Batch,Channels,Step,H,W  
     # Output：Batch，Step，Tokens，Channels
