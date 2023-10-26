@@ -21,7 +21,7 @@ log_writer = logger(config["train"]["name"] + "_test")()
 transform_test = Compose([
     ShuffleTransforms(mode="CWH")
 ])
-data_test = get_dataloader("test", download =True, transform=transform_test)
+data_test = get_dataloader("test", config = config, download =True, transform=transform_test)
 
 pth = f".\\check_point\\{config['train']['name']}\\"
 pth_files = [f"{pth}{config['train']['name']}_epoch_{i}.pth" for i in range(1, 51)] 
@@ -33,7 +33,7 @@ def predict():
         load_state = checkpoint["model"]
         load_memory_tokens = checkpoint["memory_tokens"]
         memory_tokens = load_memory_tokens
-        model = TokenTuringMachineEncoder().cuda()
+        model = TokenTuringMachineEncoder(config).cuda()
         model.load_state_dict(load_state)
 
         all_y = 0
