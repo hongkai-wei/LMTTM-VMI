@@ -9,7 +9,7 @@ from config import Config
 import torch
 import tqdm
 from utils.video_transforms import *
-
+import torch.nn as nn 
 # json_path = sys.argv[1]
 json_path = "best_memory_token_size_and_dim.json"
 
@@ -36,12 +36,17 @@ transform_val = Compose([
 
 data_train = get_dataloader("train",config=config ,download=False, transform=transform_train)
 data_val = get_dataloader("val",config=config,download=False, transform=transform_val)
+torch.manual_seed(42)
+def init_weights(m):
+    if isinstance(m, nn.Conv3d) or isinstance(m, nn.Linear) :
+        nn.init.xavier_uniform_(m.weight)
+        nn.init.normal_(m.bias)
 
 def train():
     
     memory_tokens = None
     model = TokenTuringMachineEncoder(config).cuda()
-
+    model.apply(init_weights)##init weight
     if config['train']["optimizer"] == "RMSprop":
         optimizer = torch.optim.RMSprop(
             model.parameters(), lr=config['train']["lr"], weight_decay=config['train']["weight_decay"])
@@ -98,7 +103,7 @@ def train():
                     model.eval()
                     val_x = val_x.to("cuda", dtype=torch.float32)
                     val_y = val_y.to("cuda", dtype=torch.long)
-                    if (config['train']["load_memory_tokens"] == "True"):
+                    if (config['train']["load_memory_tokens"]):
                         out, memory_tokens = model(val_x, memory_tokens)
                     else:
                         out, memory_tokens = model(val_x, memory_tokens = None)
