@@ -1,13 +1,11 @@
 {
-
-    "batch_size":32 ,
+    "batch_size": 8,
     "model": {
-        "dim": 256,
-        "memory_tokens_size": 512
+        "dim": 192,
+        "memory_tokens_size": 1024
     },
     "train": {
         "name": "exp12_memory1024_and_dim256",
-        "epoch": 1200
-
+        "epoch": 50
     }
 }

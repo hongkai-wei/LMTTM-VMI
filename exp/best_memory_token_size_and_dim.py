@@ -19,20 +19,20 @@ def run_exp(exp_json):
     # os.system("python exp\\tesorboard2excel.py " + exp_json)
 
 train_config = {
-    "name": ["exp1_memory128_and_dim64", "exp2_memory128_and_dim128", "exp3_memory128_and_dim256",
-             "exp4_memory256_and_dim64", "exp5_memory256_and_dim128", "exp6_memory256_and_dim256",
-             "exp7_memory512_and_dim64", "exp8_memory512_and_dim128", "exp9_memory512_and_dim256",
-             "exp10_memory1024_and_dim64", "exp11_memory1024_and_dim128", "exp12_memory1024_and_dim256",],
+    "name": ["exp1_memory128_and_dim64", "exp2_memory128_and_dim128",
+             "exp3_memory256_and_dim64", "exp4_memory256_and_dim128",
+             "exp5_memory512_and_dim64", "exp6_memory512_and_dim128",
+             "exp7_memory1024_and_dim64", "exp8_memory1024_and_dim128"],
 
-    "memory_tokens_size":[128, 128, 128, 256, 256, 256, 512, 512, 512, 1024, 1024, 2048],
-    "dim":[64, 128, 256, 64, 128, 256, 64, 128, 256, 64, 128, 512],
-    "batch_size":[96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 96, 16],
-    "epoch":[1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200, 1200]
+    "memory_tokens_size":[128, 128, 256, 256, 512, 512, 1024, 1024],
+    "dim":[64, 128, 64, 128, 64, 128, 64, 128],
+    "batch_size":[96, 96, 48, 48, 24, 24, 12, 12],
+    "epoch":[600, 600, 1200, 1200, 2400, 2400, 4800, 4800]
 }
 
 if __name__ == "__main__":
     for i in range(len(train_config["name"])):
-        if i ==11:
+
             with open(f'./config/{exp_json}', 'r') as file:
                 data = json.load(file)
 
