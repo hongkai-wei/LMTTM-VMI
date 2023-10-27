@@ -4,11 +4,11 @@ import json
 '''
 Explanation:
 This script selects the best model for process_unit and memory_mode.
-According to the results, exp1 has the best result, and we choose exp1 as the optimal model parameter.
+According to the results, exp3 has the best result, and we choose exp3 as the optimal model parameter.
 
 The best parameter:
                     process_unit: transformer
-                    memory_mode: TL-MHA
+                    memory_mode: TL
 '''
 
 exp_json = "best_process_unit_and_memory_mode.json"
@@ -19,9 +19,9 @@ def run_exp(exp_json):
     # os.system("python exp\\tesorboard2excel.py " + exp_json)
 
 train_config = {
-    "name": ["newexp1_MHA_transformer","exp2_AddErase_transformer","exp3_TL_transformer",
+    "name": ["exp001_MHA_transformer_pro","exp002_AddErase_transformer_pro","exp003_TL_transformer_pro-4_tken8",
              "exp4_MHA_mlp",        "exp5_AddErase_mlp",        "exp6_TL_mlp",
-             "newexp7_MHA_mixer",      "exp8_AddErase_mixer",      "newexp9_TL_mixer"],
+             "exp7_MHA_mixer",      "exp8_AddErase_mixer",      "exp9_TL_mixer"],
 
     "process_unit":["transformer","transformer","transformer",
                     "mlp","mlp","mlp",
@@ -35,7 +35,7 @@ train_config = {
 
 if __name__ == "__main__":
     for i in range(len(train_config["name"])):
-
+        if i == 2:
             with open(f'./config/{exp_json}', 'r') as file:
                 data = json.load(file)
 
