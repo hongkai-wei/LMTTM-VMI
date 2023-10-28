@@ -28,7 +28,7 @@
         "epoch": 600,
         "optimizer": "Adam",
         "lr": 0.001,
-        "weight_decay": 0.001,
+        "weight_decay": 0.002,
         "load_memory_tokens": true,
         "val_gap": 100
     }

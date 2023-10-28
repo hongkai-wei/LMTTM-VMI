@@ -19,15 +19,15 @@ def run_exp(exp_json):
     # os.system("python exp\\tesorboard2excel.py " + exp_json)
 
 train_config = {
-    "name": ["exp1_memory128_and_dim64", "exp2_memory128_and_dim128",
-             "exp3_memory256_and_dim64", "exp4_memory256_and_dim128",
-             "exp5_memory512_and_dim64", "exp6_memory512_and_dim128",
-             "exp7_memory1024_and_dim64", "exp8_memory1024_and_dim128"],
+    "name": ["exp1_memory128_and_dim64", "exp2_memory128_and_dim128", "exp3_memory128_and_dim192", "exp4_memory128_and_dim256",
+             "exp5_memory256_and_dim64", "exp6_memory256_and_dim128", "exp7_memory256_and_dim192", "exp8_memory256_and_dim256",
+             "exp9_memory512_and_dim64", "exp10_memory512_and_dim128", "exp11_memory512_and_dim192", "exp12_memory512_and_dim256",
+             "exp13_memory1024_and_dim64", "exp14_memory1024_and_dim128", "exp15_memory1024_and_dim192", "exp16_memory1024_and_dim256"],
 
-    "memory_tokens_size":[128, 128, 256, 256, 512, 512, 1024, 1024],
-    "dim":[64, 128, 64, 128, 64, 128, 64, 128],
-    "batch_size":[96, 96, 48, 48, 24, 24, 12, 12],
-    "epoch":[600, 600, 1200, 1200, 2400, 2400, 4800, 4800]
+    "memory_tokens_size":[128, 128, 128, 128, 256, 256, 256, 256, 512, 512, 512, 512, 1024, 1024, 1024, 1024],
+    "dim":[64, 128, 192, 256, 64, 128, 192, 256, 64, 128, 192, 256, 64, 128, 192, 256],
+    "batch_size":[36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36],
+    "epoch":[600, 600, 600, 600, 900, 900, 900, 900, 1600, 1600, 1600, 1600, 4200, 4200, 4200, 4200]
 }
 
 if __name__ == "__main__":

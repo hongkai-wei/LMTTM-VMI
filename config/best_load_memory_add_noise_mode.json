@@ -1,10 +1,10 @@
 {
     "model": {
         "load_memory_add_noise": true,
-        "load_memory_add_noise_mode": "poisson",
+        "load_memory_add_noise_mode": "normal",
         "all_load_memory_add_noise_mode": "None, uniform, laplace, normal, exp, gamma, poisson"
     },
     "train": {
-        "name": "exp1_load_memory_add_noise_poisson"
+        "name": "exp4_load_memory_add_noise_normal"
     }
 }
