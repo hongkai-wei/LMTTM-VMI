@@ -19,15 +19,15 @@ def run_exp(exp_json):
     # os.system("python exp\\tesorboard2excel.py " + exp_json)
 
 train_config = {
-    "name": ["exp1_memory128_and_dim64",
-             "exp3_memory256_and_dim64",
-             "exp5_memory512_and_dim64",
-             "exp7_memory1024_and_dim64",],
+    "name": ["exp1_memory128_and_dim64", "exp2_memory128_and_dim128",
+             "exp5_memory256_and_dim64", "exp6_memory256_and_dim128",
+             "exp9_memory512_and_dim64", "exp10_memory512_and_dim128",
+             "exp13_memory1024_and_dim64", "exp14_memory1024_and_dim128"],
 
-    "memory_tokens_size":[128, 256, 512, 1024],
-    "dim":[64, 64, 64, 64],
-    "batch_size":[96, 48, 24, 12],
-    "epoch":[600, 1200, 2400, 4800]
+    "memory_tokens_size":[128, 128, 256, 256, 512, 512, 1024, 1024],
+    "dim":[64, 128, 64, 128, 64, 128, 64, 128],
+    "batch_size":[36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36, 36],
+    "epoch":[600, 600, 1000, 1000, 2000, 2000, 5000, 5000]
 }
 
 if __name__ == "__main__":
