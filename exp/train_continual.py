@@ -27,12 +27,12 @@ else:
 
 transform_train = Compose([
     ShuffleTransforms(mode="CWH")
-])
+      ])
 transform_val = Compose([
-    ShuffleTransforms(mode="CWH")
+     ShuffleTransforms(mode="CWH")
 ])
 
-data_train = get_dataloader("train",config=config ,download=False, transform=transform_train)
+data_train = get_dataloader("train",config=config ,download=False,transform=transform_train)
 data_val = get_dataloader("val",config=config,download=False, transform=transform_val)
 
 torch.manual_seed(0)
@@ -45,7 +45,7 @@ def train():
     
     memory_tokens = None
     model = TokenTuringMachineEncoder(config).cuda()
-    model.apply(init_weights)##init weight
+    model.apply(init_weights)#init weight
     if config['train']["optimizer"] == "RMSprop":
         optimizer = torch.optim.RMSprop(
             model.parameters(), lr=config['train']["lr"], weight_decay=config['train']["weight_decay"])
@@ -82,6 +82,7 @@ def train():
             train_nums += 1
             loss = citizer(output, target)
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)  # clip gradient
             optimizer.step()
             optimizer.zero_grad()
             losses.append(loss.item())

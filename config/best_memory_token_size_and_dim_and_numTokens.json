@@ -2,7 +2,8 @@
     "batch_size": 50,
     "model": {
         "dim": 256,
-        "memory_tokens_size": 256
+        "memory_tokens_size": 256,
+        "num_tokens": 32
     },
     "train": {
         "name": "exp3_memory256_and_dim256_and_numTokens32",

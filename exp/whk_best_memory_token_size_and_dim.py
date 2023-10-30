@@ -32,7 +32,6 @@ train_config = {
 
 if __name__ == "__main__":
     for i in range(len(train_config["name"])):
-
             with open(f'./config/{exp_json}', 'r') as file:
                 data = json.load(file)
 

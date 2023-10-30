@@ -34,7 +34,7 @@ transform_val = Compose([
 data_train = get_dataloader("train",config=config ,download=False, transform=transform_train)
 data_val = get_dataloader("val",config=config,download=False, transform=transform_val)
 
-seed = 42
+seed = 0
 torch.manual_seed(seed)
 
 def init_weights(m):
