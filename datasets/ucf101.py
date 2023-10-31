@@ -7,6 +7,27 @@ class ucf101(img_data):
     """
     A class representing the UCF101 dataset.
 
+    NOTES:
+    please download the ucf dataset and unzip it to the speical path ,like   f:/ucf101 ,for the reason of the ucf101 dataset is too large ,so we do not download it in the code.   
+    About file structure:
+    if u dont have the jpgs file,please run thr function in the general_video_process.py or u can run general_videoimgs_dataset.py
+    ucf101
+    ├── ApplyEyeMakeup
+    │   ├── 01├──001.jpg 002.jpg 003.jpg ...
+    │   ├── 02├──001.jpg 002.jpg 003.jpg ..
+    ├── ApplyLipstick
+    │   ├── 01├──001.jpg 002.jpg 003.jpg ...
+    │   ├── 02├──001.jpg 002.jpg 003.jpg ..
+
+    for other datset:
+    your dataset  path
+    ├── classA
+    │   ├── 01   include├──001.jpg 002.jpg 003.jpg ...
+    │   ├── 02   include├──001.jpg 002.jpg 003.jpg ..
+    ├── classB
+    │   ├── 01   include├──001.jpg 002.jpg 003.jpg ...
+    │   ├── 02   include├──001.jpg 002.jpg 003.jpg ..
+
     Args:
     imgs_path (str): The path to the directory containing the dataset.
     transforme (optional): The transformation to apply to the dataset. Defaults to transform.
