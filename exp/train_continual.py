@@ -38,7 +38,7 @@ data_val = get_dataloader("val",config=config,download=False, transform=transfor
 torch.manual_seed(0)
 
 def init_weights(m):
-    if isinstance(m, nn.Conv3d) or isinstance(m, nn.Linear) :
+    if isinstance(m, nn.Conv1d) or isinstance(m, nn.Conv2d) or isinstance(m, nn.Conv3d) or isinstance(m, nn.Linear):
         nn.init.xavier_uniform_(m.weight)
 
 def train():
@@ -64,8 +64,6 @@ def train():
     convergence_flag = -1
     avg_loss = 0
 
-    model.train()
-
     for _ in epoch_bar:
         epoch_bar.set_description(
             f"train epoch is {format(_+1)} of {config['train']['epoch']}")
@@ -75,6 +73,7 @@ def train():
             input = input.to("cuda", dtype=torch.float32)  # B C T H W
             target = target.to("cuda", dtype=torch.long)  # B 1
             target = target.squeeze(1)  # B 1
+            model.train()
             if (config['train']["load_memory_tokens"]):
                 output, memory_tokens = model(input, memory_tokens)
             else:
@@ -82,7 +81,6 @@ def train():
             train_nums += 1
             loss = citizer(output, target)
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)  # clip gradient
             optimizer.step()
             optimizer.zero_grad()
             losses.append(loss.item())

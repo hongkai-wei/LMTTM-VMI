@@ -35,6 +35,8 @@ def predict():
         model = TokenTuringMachineEncoder(config).cuda()
         model.load_state_dict(load_state)
 
+        model.eval()
+
         all_y = 0
         all_real = 0
 

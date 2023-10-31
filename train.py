@@ -38,7 +38,7 @@ seed = 0
 torch.manual_seed(seed)
 
 def init_weights(m):
-    if isinstance(m, nn.Conv3d) or isinstance(m, nn.Linear) :
+    if isinstance(m, nn.Conv1d) or isinstance(m, nn.Conv2d) or isinstance(m, nn.Conv3d) or isinstance(m, nn.Linear) :
         nn.init.xavier_uniform_(m.weight)
 
 def train():
@@ -64,8 +64,6 @@ def train():
     convergence_flag = -1
     avg_loss = 0
 
-    model.train()
-
     for _ in epoch_bar:
         epoch_bar.set_description(
             f"train epoch is {format(_+1)} of {config['train']['epoch']}")
@@ -75,6 +73,7 @@ def train():
             input = input.to("cuda", dtype=torch.float32)  # B C T H W
             target = target.to("cuda", dtype=torch.long)  # B 1
             target = target.squeeze(1)  # B 1
+            model.train()
             if (config['train']["load_memory_tokens"]):
                 output, memory_tokens = model(input, memory_tokens)
             else:
@@ -113,8 +112,8 @@ def train():
                     val_acc = (result/all)*100
                     log_writer.add_scalar("val acc", val_acc, val_acc_nums)
                     val_acc_nums += 1
-            # Save the model for the next 50 epochs
 
+            # Save the model for the next 50 epochs
         if _ >= (config['train']["epoch"]-50):
             save_name = f"./check_point/{config['train']['name']}/{config['train']['name']}_epoch_{_ -config['train']['epoch'] + 51}.pth"
             torch.save({"model": model.state_dict(), "memory_tokens": memory_tokens}, save_name)

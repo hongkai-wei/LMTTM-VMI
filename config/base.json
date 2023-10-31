@@ -21,10 +21,11 @@
         "Write_use_positional_embedding": true,
         "load_memory_add_noise": true,
         "load_memory_add_noise_mode": "normal",
-        "all_load_memory_add_noise_mode": "None, uniform, laplace, normal, exp, gamma, poisson"
+        "all_load_memory_add_noise_mode": "None, uniform, laplace, normal, exp, gamma, poisson",
+        "variant": "variant1"
     },
     "train": {
-        "name": "TTM_base",
+        "name": "exp_variant1",
         "epoch": 600,
         "optimizer": "Adam",
         "lr": 0.0001,
