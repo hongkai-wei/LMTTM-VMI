@@ -4,7 +4,7 @@ from config import Config
 import torch
 
 def get_dataloader(split,config, download=False, transform=None):
-    basic_data = datasets.get_dataset(split=split, download=download, transform=transform)
+    basic_data = datasets.get_dataset(split=split, download=download, transform=transform,config=config)
     seed = 42
     torch.manual_seed(seed)
     dataloader = data.DataLoader(
