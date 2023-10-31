@@ -1,6 +1,3 @@
-import os
-import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.get_data_iter import get_dataloader
 from model.ttm_basic_network import TokenTuringMachineEncoder
@@ -8,13 +5,13 @@ from utils.log import logger
 from config import Config
 import torch
 import tqdm
-from utils.video_transforms import *
+import torchvision.transforms as transforms
 import torch.nn as nn 
-json_path = sys.argv[1]
-config = Config.getInstance(json_path)
+import os
+config = Config.getInstance("base_ucf.json")
 
 log_writer = logger(config['train']["name"] + "_train")()
-
+#
 
 if not os.path.exists("./check_point"):
     os.mkdir("./check_point")
@@ -23,29 +20,25 @@ if os.path.exists(checkpoint_path):
     pass
 else:
     os.mkdir(checkpoint_path)
-#
 
-transform_train = Compose([
-    ShuffleTransforms(mode="CWH")
-      ])
-transform_val = Compose([
-     ShuffleTransforms(mode="CWH")
+transform = transforms.Compose([
+    transforms.Resize((124, 124)),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
 ])
 
-data_train = get_dataloader("train",config=config ,download=False,transform=transform_train)
-data_val = get_dataloader("val",config=config,download=False, transform=transform_val)
-
-torch.manual_seed(0)
+data = get_dataloader("train",config=config ,download=False, transform=transform)
+seed = 0
+torch.manual_seed(seed)
 
 def init_weights(m):
-    if isinstance(m, nn.Conv1d) or isinstance(m, nn.Conv2d) or isinstance(m, nn.Conv3d) or isinstance(m, nn.Linear):
+    if isinstance(m, nn.Conv3d) or isinstance(m, nn.Linear) :
         nn.init.xavier_uniform_(m.weight)
 
 def train():
     
-
+    memory_tokens = None
     model = TokenTuringMachineEncoder(config).cuda()
-    model.apply(init_weights)#init weight
+    model.apply(init_weights)##init weight
     if config['train']["optimizer"] == "RMSprop":
         optimizer = torch.optim.RMSprop(
             model.parameters(), lr=config['train']["lr"], weight_decay=config['train']["weight_decay"])
@@ -55,7 +48,6 @@ def train():
 
     citizer = torch.nn.CrossEntropyLoss()
     epoch_bar = tqdm.tqdm(range(config['train']["epoch"]))
-    memory_tokens = None
     train_nums = 0
     val_acc_nums = 0
     val_acc = 0
@@ -65,16 +57,18 @@ def train():
     convergence_flag = -1
     avg_loss = 0
 
+    model.train()
+
     for _ in epoch_bar:
         epoch_bar.set_description(
             f"train epoch is {format(_+1)} of {config['train']['epoch']}")
-        bar = tqdm.tqdm(data_train, leave=False)
+        bar = tqdm.tqdm(data, leave=False)
         losses = []
         for input, target in bar:
             input = input.to("cuda", dtype=torch.float32)  # B C T H W
+            
             target = target.to("cuda", dtype=torch.long)  # B 1
-            target = target.squeeze(1)  # B 1
-            model.train()
+      
             if (config['train']["load_memory_tokens"]):
                 output, memory_tokens = model(input, memory_tokens)
             else:
@@ -98,21 +92,6 @@ def train():
                 log_writer.add_scalar("loss per 100 step", avg_loss, train_nums)
                 losses = []
 
-                for val_x, val_y in data_val:
-                    model.eval()
-                    val_x = val_x.to("cuda", dtype=torch.float32)
-                    val_y = val_y.to("cuda", dtype=torch.long)
-                    if (config['train']["load_memory_tokens"]):
-                        out, memory_tokens = model(val_x, memory_tokens)
-                    else:
-                        out, memory_tokens = model(val_x, memory_tokens = None)
-                    out = torch.argmax(out, dim=1)
-                    val_y = val_y.squeeze(1)
-                    all = val_y.size(0)
-                    result = (out == val_y).sum().item()
-                    val_acc = (result/all)*100
-                    log_writer.add_scalar("val acc", val_acc, val_acc_nums)
-                    val_acc_nums += 1
             # Save the model for the next 50 epochs
 
         if _ >= (config['train']["epoch"]-50):
