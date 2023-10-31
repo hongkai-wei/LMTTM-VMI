@@ -14,7 +14,7 @@ json_path = sys.argv[1]
 config = Config.getInstance(json_path)
 
 log_writer = logger(config['train']["name"] + "_train")()
-#
+
 
 if not os.path.exists("./check_point"):
     os.mkdir("./check_point")
@@ -43,7 +43,7 @@ def init_weights(m):
 
 def train():
     
-    memory_tokens = None
+
     model = TokenTuringMachineEncoder(config).cuda()
     model.apply(init_weights)#init weight
     if config['train']["optimizer"] == "RMSprop":
@@ -55,6 +55,7 @@ def train():
 
     citizer = torch.nn.CrossEntropyLoss()
     epoch_bar = tqdm.tqdm(range(config['train']["epoch"]))
+    memory_tokens = None
     train_nums = 0
     val_acc_nums = 0
     val_acc = 0
