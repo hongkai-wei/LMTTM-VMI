@@ -37,7 +37,7 @@ class img_data(Dataset):
             image = self.transforme2(image)#for cat the tensor
             tensor[i] = image
         tensor = self.transforme(tensor)
-        tensor = tensor.transpose(1, 2)
+        tensor = tensor.transpose(0, 1)
         return tensor,label
 
     def __len__(self):
