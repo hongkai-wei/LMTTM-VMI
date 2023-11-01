@@ -19,7 +19,7 @@ def run_exp(exp_json):
     # os.system("python exp\\tesorboard2excel.py " + exp_json)
 
 train_config = {
-    "name": ["exp1_MHA_transformer","exp0_AddErase_transformer","exp3_TL_transformer",
+    "name": ["exp1_MHA_transformer","exp002_AddErase_transformer","exp3_TL_transformer",
              "exp4_MHA_mlp",        "exp5_AddErase_mlp",        "exp6_TL_mlp",
              "exp7_MHA_mixer",      "exp8_AddErase_mixer",      "exp9_TL_mixer"],
 
@@ -35,6 +35,7 @@ train_config = {
 
 if __name__ == "__main__":
     for i in range(len(train_config["name"])):
+        if i == 1 :
             with open(f'./config/{exp_json}', 'r') as file:
                 data = json.load(file)
 

@@ -1,12 +1,12 @@
 {
     "batch_size": 24,
     "model": {
-        "dim": 512,
+        "dim": 128,
         "memory_tokens_size": 512,
         "num_tokens": 32
     },
     "train": {
-        "name": "exp6_memory512_and_dim512_and_numTokens32",
+        "name": "exp2_memory512_and_dim128_and_numTokens32",
         "epoch": 800
     }
 }

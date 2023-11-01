@@ -14,12 +14,12 @@ The best parameter:
 exp_json = "best_memory_token_size_and_dim_and_numTokens.json"
 
 def run_exp(exp_json):
-    # os.system("python exp\\train_continual.py " + exp_json)
+    os.system("python exp\\train_continual.py " + exp_json)
     os.system("python exp\\predict_continual.py " + exp_json)
     # os.system("python exp\\tesorboard2excel.py " + exp_json)
 
 train_config = {
-    "name": ["exp1_memory512_and_dim128_and_numTokens8",
+    "name": ["exp98_memory128_and_dim128_and_numTokens8",
              "exp2_memory512_and_dim128_and_numTokens32",
              "exp3_memory512_and_dim128_and_numTokens64",
              "exp4_memory512_and_dim512_and_numTokens8",
@@ -27,10 +27,10 @@ train_config = {
              "exp6_memory512_and_dim512_and_numTokens32",
              "exp7_memory512_and_dim512_and_numTokens64"],
 
-    "memory_tokens_size":[512, 512, 512, 512, 512, 512, 512],
+    "memory_tokens_size":[128, 512, 512, 512, 512, 512, 512],
     "dim":[128, 128, 128, 512, 512, 512, 512],
-    "batch_size":[24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24],
-    "epoch":[800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800],
+    "batch_size":[100, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24],
+    "epoch":[600, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800, 800],
     "num_tokens":[8, 32, 64, 8, 16, 32, 64]
 }
 

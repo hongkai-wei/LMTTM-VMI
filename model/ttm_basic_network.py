@@ -72,6 +72,9 @@ class TokenAddEraseWrite(nn.Module):
             config["batch_size"], config["model"]["memory_tokens_size"], config["model"]["dim"]).cuda())
         self.trans_outdim = nn.MultiheadAttention(
             embed_dim=config["model"]["dim"], num_heads=8, dropout=0.1, batch_first=True)
+        AddEraseWrite_input = config["model"]["memory_tokens_size"]+config["model"]["num_tokens"]+ int((config["train"]["input_H"]-config["model"]["patch_size"])/config["model"]["patch_size"]+1) * int((config["train"]["input_W"]-config["model"]["patch_size"])/config["model"]["patch_size"]+1)
+        self.fn = nn.Linear(AddEraseWrite_input, config["model"]["memory_tokens_size"])
+        self.relu = nn.ReLU()
         self.softmax = nn.Softmax(dim = -1)
 
     def forward(self, memory_tokens, control_inputs):
@@ -102,8 +105,12 @@ class TokenAddEraseWrite(nn.Module):
         wat = torch.mean(wat, dim=1)
 
         output = output + wat
+        output = output.transpose(1,2)
+        output = self.fn(output)
+        output = self.relu(output)
+        output = output.transpose(1,2)
         # Changing the Output Shape
-        output = self.trans_outdim(self.query, output, output)[0]
+        # output = self.trans_outdim(self.query, output, output)[0]
 
 
 
