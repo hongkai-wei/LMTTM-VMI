@@ -1,5 +1,5 @@
 {
-    "batch_size": 96,
+    "batch_size": 100,
     "dataset_name": "organmnist3d",
     "root": "./datasets_data/medmnist",
     "log_dir": "./logs",
@@ -8,11 +8,11 @@
         "drop_r": 0.2,
         "process_unit": "transformer",
         "all_process_unit": "transformer, mixer,transformer",
-        "memory_mode": "TL",
+        "memory_mode": "TL-AddErase",
         "all_memory_mode": "TL-MHA, TL-AddErase, TL",
         "in_channels": 1,
         "dim": 64,
-        "memory_tokens_size": 128,
+        "memory_tokens_size": 96,
         "num_tokens": 8,
         "step": 28,
         "out_class_num": 11,
@@ -26,11 +26,13 @@
     },
     "train": {
         "name": "exp_variant1",
-        "epoch": 600,
+        "epoch": 1000,
         "optimizer": "Adam",
         "lr": 0.0001,
         "weight_decay": 0.0001,
         "load_memory_tokens": true,
+        "input_H":28,
+        "input_W":28,
         "val_gap": 100
     }
 }
