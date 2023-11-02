@@ -23,7 +23,7 @@ train_config = {
 }
 
 for i in range(len(train_config["name"])):
-
+  if i >=2:
     with open(f'./config/{exp_json}', 'r') as file:
         data = json.load(file)
 

@@ -92,7 +92,7 @@ def train():
             if train_nums % config['train']["val_gap"] == 0:
                 avg_loss = sum(losses)/len(losses)
 
-                if avg_loss <= 0.1 and convergence_flag == -1:
+                if avg_loss <= 0.2 and convergence_flag == -1:
                     convergence_batch = (train_nums * config["batch_size"])
                     convergence_flag = 1
                 

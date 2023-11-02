@@ -3,7 +3,7 @@ import torch.nn as nn
 from einops import rearrange, reduce, repeat
 from einops.layers.torch import Rearrange
 import torch.nn.init as init
-from .tokenLearner_network import TokenLearnerModuleV11
+from .tokenLearner_network import TokenLearnerModule, TokenLearnerModuleV11
 from config.configure import Config
 import numpy as np
 
@@ -120,8 +120,10 @@ class TokenAddEraseWrite(nn.Module):
 class TokenTuringMachineUnit(nn.Module):
     def __init__(self,config) -> None:
         super(TokenTuringMachineUnit, self).__init__()
-        self.tokenLearner1 = TokenLearnerModuleV11(in_channels=config["model"]["dim"], num_tokens=config["model"]["num_tokens"], num_groups=1)
-        self.tokenLearner2 = TokenLearnerModuleV11(in_channels=config["model"]["dim"], num_tokens=config["model"]["memory_tokens_size"], num_groups=1)
+        self.tokenLearner1 = TokenLearnerModule(in_channels=config["model"]["dim"], num_tokens=config["model"]["num_tokens"], num_groups=1)
+        self.tokenLearner2 = TokenLearnerModule(in_channels=config["model"]["dim"], num_tokens=config["model"]["memory_tokens_size"], num_groups=1)
+        self.tokenLearnerV11_1 = TokenLearnerModuleV11(in_channels=config["model"]["dim"], num_tokens=config["model"]["num_tokens"], num_groups=1)
+        self.tokenLearnerV11_2 = TokenLearnerModuleV11(in_channels=config["model"]["dim"], num_tokens=config["model"]["memory_tokens_size"], num_groups=1)
         self.transformerBlock = nn.TransformerEncoderLayer(d_model=config["model"]["dim"], nhead=8, dim_feedforward=config["model"]["dim"] * 3, dropout=0.2)
         self.tokenLearnerMHA1 = TokenLearnerMHA(config["model"]["num_tokens"],config)
         self.tokenLearnerMHA2 = TokenLearnerMHA(config["model"]["memory_tokens_size"],config)
