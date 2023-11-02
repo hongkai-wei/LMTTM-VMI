@@ -32,8 +32,8 @@ transform_val = Compose([
      ShuffleTransforms(mode="CWH")
 ])
 
-data_train = get_dataloader("train",config=config ,download=False,transform=transform_train)
-data_val = get_dataloader("val",config=config,download=False, transform=transform_val)
+data_train = get_dataloader("train",config=config ,download=True,transform=transform_train)
+data_val = get_dataloader("val",config=config,download=True, transform=transform_val)
 
 torch.manual_seed(0)
 
@@ -93,7 +93,7 @@ def train():
             if train_nums % config['train']["val_gap"] == 0:
                 avg_loss = sum(losses)/len(losses)
 
-                if avg_loss <= 0.1 and convergence_flag == -1:
+                if avg_loss <= 0.2 and convergence_flag == -1:
                     convergence_batch = (train_nums * config["batch_size"])
                     convergence_flag = 1
                 
