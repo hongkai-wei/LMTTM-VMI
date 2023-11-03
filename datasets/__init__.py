@@ -9,10 +9,10 @@ def get_dataset(split, download=False, transform=None,config=Config.getInstance(
         if not os.path.exists(Config.getInstance()["root"]):
             os.makedirs(Config.getInstance()["root"])
         return MedMNISTDataset(split=split, download=download, transform=transform)
-    elif config["dataset_name"] == "ucf101":
-        from .ucf101 import ucf101
+    elif config["dataset_name"] == "HMDB":
+        from .hmdb51 import HMDB51Dataset
         if split == "train":
             pass
         else:
             config["root"] = os.path.join(os.path.dirname(config["root"]),"_test")
-        return ucf101(config["root"],transform)
+        return HMDB51Dataset(config["root"],transform)

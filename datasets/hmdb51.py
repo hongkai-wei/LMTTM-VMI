@@ -1,9 +1,11 @@
-
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from .general_video_process import *
 from .general_videoimgs_dataset import *
 from utils.spilt import spilt
 import os
-class ucf101(img_data):
+class HMDB51Dataset(GeneralImgsDataset):
     """
     A class representing the UCF101 dataset.
 
@@ -34,9 +36,15 @@ class ucf101(img_data):
     """
     def __init__(self, imgs_path: str, transforme) -> None:
         super().__init__(imgs_path, transforme)
-        if not detect_if_in_imgs(path=imgs_path):
-            # prepreprocessvideos(path=imgs_path, speicial_frames_num=32)
-            preprocessvideos2imgs(path=imgs_path, speicial_frames_num=32)
-            spilt(os.path.join(os.path.dirname(imgs_path),"imgs"),os.path.join(os.path.dirname(imgs_path),"_test"),0.5)
-            
-        print("process for ucf daatset finish")
+        if not DetectResult(path=imgs_path):
+            print("the dir isnt the HMDB51 Imgs Dir,start to convert video to imgs")
+            PreProcess(path=imgs_path, speicial_frames_num=32)
+            PreProcessVideos2Imgs(path=imgs_path, speicial_frames_num=32)
+            spilt(os.path.join(os.path.dirname(imgs_path),"imgs"),os.path.join(os.path.dirname(imgs_path),"_test"),0.3)
+            print("your test imgs files dir is {}".format(os.path.join(os.path.dirname(imgs_path),"_test")))
+        print("check for datset finish")
+
+
+if __name__ == "__main__":
+    data = HMDB51Dataset(r"F:\imgs", None)
+    print("test")

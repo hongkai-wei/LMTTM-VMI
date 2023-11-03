@@ -4,7 +4,7 @@ from tqdm import tqdm
 import torch
 import PIL
 import torchvision.transforms as transforms
-def prepreprocessvideos(path:str,speicial_frames_num:int=16):
+def PreProcess(path:str,speicial_frames_num:int=16):
     del_list = []
     sub_dirs = os.listdir(path)# video classes dir
     for _ in tqdm(range(len(sub_dirs))):
@@ -21,9 +21,9 @@ def prepreprocessvideos(path:str,speicial_frames_num:int=16):
                 
 
 # prepreprocessvideos(r"F:\YANGYANG\etst2video",60)
-def preprocessvideos2imgs(path:str,speicial_frames_num:int=16):
+def PreProcessVideos2Imgs(path:str,speicial_frames_num:int=16):
     save_path_abovbe = os.path.dirname(path)
-    save_path_abovbe = os.path.join(save_path_abovbe,"imgs")
+    save_path_abovbe = os.path.join(save_path_abovbe,"imgs")# if u path is f:/data   ,then your img dir will be f:/imgs
     print("your imgs dir is {},!!!!!!!pls set this path to your base.json!!!!!!!!!!".format(save_path_abovbe))
     sub_dirs = os.listdir(path)# video classes dir
     labels = sorted(sub_dirs)
@@ -47,8 +47,8 @@ def preprocessvideos2imgs(path:str,speicial_frames_num:int=16):
                     img = transforms.ToPILImage()(vfarme[i*skip,:,:,:])
                     img.save(os.path.join(abs_save_dir,f"{i:03d}.jpg"))
 
-# preprocessvideos2imgs(r"F:\YANGYANG\hdmi_data",32)
-def detect_if_in_imgs(path:str):
+
+def DetectResult(path:str):
     sub_dirs = os.listdir(path) 
     try:
         for _ in tqdm(range(len(sub_dirs))):
@@ -61,13 +61,14 @@ def detect_if_in_imgs(path:str):
             result = [s.endswith("jpg") for s in wait_detect_imgs]
 
         if False  in result:
-            print("the dir have the files unbelong *.jpg\n{img_path}")
+            print("the dir have the files unbelong *.jpg file \n{img_path}")
             return False#need prepross
                 # raise Exception(f"the dir have the files unbelong *.jpg\n{img_path}")
         else:
             return True
     except Exception as e:
-                    print("error,it ist the imgs dir,pls run prepreprocessvideos first,and run preprocessvideos2imgs secondly,\n {}".format(e))
+                    print("error,it isn't the imgs dir,pls set spilt = train firstly , and init HMDB class again, error is \n {}".format(e))
+                
 
 
 
@@ -79,9 +80,6 @@ def detect_if_in_imgs(path:str):
 
 
 
+__all__ = ["PreProcess","PreProcessVideos2Imgs","DetectResult"]
 
-__all__ = ['detect_if_in_imgs',
-           'preprocessvideos2imgs',
-           'prepreprocessvideos'  ]
-
-# detect_if_in_imgs(r"F:\YANGYANG\imgs")
+# DetectResult(r"F:\imgs")

@@ -8,7 +8,7 @@ import tqdm
 import torchvision.transforms as transforms
 import torch.nn as nn 
 import os
-config = Config.getInstance("base_ucf.json")
+config = Config.getInstance("base_otehr_dataset.json")
 
 log_writer = logger(config['train']["name"] + "_train")()
 #
