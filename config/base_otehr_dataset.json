@@ -1,7 +1,7 @@
 {
     "batch_size": 16,
-    "dataset_name": "ucf101",
-    "root": "F:\\ucf-set\\imgs",
+    "dataset_name": "HMDB",
+    "root": "F:\\imgs",
     "log_dir": "./logs",
     "checkpoint_dir": "./checkpoints",
     "model": {
