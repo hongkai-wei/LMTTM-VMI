@@ -42,7 +42,7 @@ class TokenLearnerMHA(nn.Module):
     def __init__(self, output_tokens,config) -> None:
         super(TokenLearnerMHA, self).__init__()
         self.query = nn.Parameter(torch.randn(config["batch_size"], output_tokens, config["model"]["dim"]).cuda())
-        self.attn = nn.MultiheadAttention(embed_dim=config["model"]["dim"], num_heads=8, dropout=0.1, batch_first=True)
+        self.attn = nn.MultiheadAttention(embed_dim=config["model"]["dim"], num_heads=8, dropout=0.2, batch_first=True)
 
     def forward(self, input):
         # [0]is output，[1]is weight
@@ -71,7 +71,7 @@ class TokenAddEraseWrite(nn.Module):
         self.query = nn.Parameter(torch.randn(
             config["batch_size"], config["model"]["memory_tokens_size"], config["model"]["dim"]).cuda())
         self.trans_outdim = nn.MultiheadAttention(
-            embed_dim=config["model"]["dim"], num_heads=8, dropout=0.1, batch_first=True)
+            embed_dim=config["model"]["dim"], num_heads=8, dropout=0.2, batch_first=True)
         AddEraseWrite_input = config["model"]["memory_tokens_size"]+config["model"]["num_tokens"]+ int((config["train"]["input_H"]-config["model"]["patch_size"])/config["model"]["patch_size"]+1) * int((config["train"]["input_W"]-config["model"]["patch_size"])/config["model"]["patch_size"]+1)
         self.fn = nn.Linear(AddEraseWrite_input, config["model"]["memory_tokens_size"])
         self.relu = nn.ReLU()
