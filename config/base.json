@@ -1,7 +1,9 @@
 {
-    "batch_size": 96,
-    "dataset_name": "organmnist3d",
-    "root": "./datasets_data/medmnist",
+    "batch_size": 50,
+    "dataset_name": "HMDB_dataset0",
+    "all_dataset_name": "organmnist3d, hmdb_dataset0/1/2",
+    "root": "./datasets_data/hmdb/dataset0",
+    "all_root": "./datasets_data/medmnist  ./datasets_data/hmdb/dataset0 1 2",
     "log_dir": "./logs",
     "checkpoint_dir": "./checkpoints",
     "model": {
@@ -10,12 +12,12 @@
         "all_process_unit": "transformer, mixer,transformer",
         "memory_mode": "TL",
         "all_memory_mode": "TL-MHA, TL-AddErase, TL",
-        "in_channels": 1,
-        "dim": 64,
-        "memory_tokens_size": 128,
-        "num_tokens": 8,
+        "in_channels": 3,
+        "dim": 96,
+        "memory_tokens_size": 96,
+        "num_tokens": 16,
         "step": 28,
-        "out_class_num": 11,
+        "out_class_num": 17,
         "patch_size": 3,
         "Read_use_positional_embedding": false,
         "Write_use_positional_embedding": true,
@@ -26,13 +28,13 @@
     },
     "train": {
         "name": "exp_variant1",
-        "epoch": 600,
+        "epoch": 100,
         "optimizer": "Adam",
-        "lr": 0.0002,
-        "weight_decay": 0.0002,
+        "lr": 0.0001,
+        "weight_decay": 0.0001,
         "load_memory_tokens": true,
-        "input_H":28,
-        "input_W":28,
-        "val_gap": 100
+        "input_H": 84,
+        "input_W": 84,
+        "val_gap": 20
     }
 }
