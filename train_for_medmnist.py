@@ -13,7 +13,6 @@ import torch.nn as nn
 config = Config.getInstance()
 
 log_writer = logger(config['train']["name"] + "_train")()
-#
 
 if not os.path.exists("./check_point"):
     os.mkdir("./check_point")
@@ -116,12 +115,12 @@ def train():
                     val_acc_nums += 1
 
             # Save the model for the next 50 epochs
-        if _ >= (config['train']["epoch"]-50):
+        if _ >= (config['train']["epoch"]-5):
             save_name = f"./check_point/{config['train']['name']}/{config['train']['name']}_epoch_{_ -config['train']['epoch'] + 51}.pth"
             torch.save({"model": model.state_dict(), "memory_tokens": memory_tokens}, save_name)
 
 
-        if _ >= (config['train']["epoch"]-50):
+        if _ >= (config['train']["epoch"]-5):
             save_loss.append(avg_loss)
 
     final_save_loss = sum(save_loss)/(len(save_loss))

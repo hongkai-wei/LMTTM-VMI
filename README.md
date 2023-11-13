@@ -13,6 +13,11 @@ We design a neutral turing machine with detachable memory. The memory is detacha
 
 ## Dataset
 
+| Num | Dataset | Links |
+| :---: | :---: | :---: |
+| 2 | HMDB51(3*17) | https://cowtransfer.com/s/8a1e59c157c242 Click on the link to view [hmdb], or visit Cow Quick Transfer cowtransfer.com and enter the transfer password 8tfkyz to view |
+| 1 | Medmnist-organmnist3d | - |
+
 ## How to run
 
 ## Results

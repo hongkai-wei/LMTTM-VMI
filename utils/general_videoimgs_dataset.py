@@ -20,14 +20,20 @@ class GeneralImgsDataset(Dataset):
     - transforme (transformer) : The transformer to apply to the image data.
 
     '''
-    def __init__(self,imgs_path:str,transforme,speicial_class_nums = 51) -> None:
+    def __init__(self,imgs_path:str,transforme,speicial_class_nums = 17) -> None:
+    
         super().__init__()
         random.seed(42)
+        # self.labels = sorted(os.listdir(imgs_path))
         if speicial_class_nums >= 51 :
             speicial_class_nums = 51
             self.labels = sorted(os.listdir(imgs_path))
         else:
-            self.labels = sorted(random.sample(os.listdir(imgs_path),speicial_class_nums))
+        
+            self.labels = sorted(os.listdir(imgs_path))[0:17]
+            # 0-17 17-34 34-51
+            
+
         self.imgs_path =[os.path.join(imgs_path,cls,single_img)  for cls in self.labels for single_img in os.listdir(os.path.join(imgs_path,cls))]
         self.transforme = transforme
         self.transforme2 = transforms.Compose([transforms.ToTensor(),transforms.Resize((224, 224))])

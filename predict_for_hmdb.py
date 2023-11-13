@@ -13,17 +13,17 @@ import tqdm
 import os
 from utils.video_transforms import *
 
-json_path = sys.argv[1]
-config = Config.getInstance(json_path)
+# json_path = sys.argv[1]
+config = Config.getInstance()
 transform_test = Compose([
     ShuffleTransforms(mode="CWH")
 ])
 
 log_writer = logger(config["train"]["name"] + "_test")()
-data_test = get_dataloader("test", config = config, download = True, transform = transform_test)
+test_loader = get_dataloader("test", config=config, download=False, transform=None)
 
 pth = f".\\check_point\\{config['train']['name']}\\"
-pth_files = [f"{pth}{config['train']['name']}_epoch_{i}.pth" for i in range(1, 51)] 
+pth_files = [f"{pth}{config['train']['name']}_epoch_{i}.pth" for i in range(1, 6)] 
 
 def predict():
     avg_acc = 0
@@ -33,12 +33,13 @@ def predict():
         load_memory_tokens = checkpoint["memory_tokens"]
         memory_tokens = load_memory_tokens
         model = TokenTuringMachineEncoder(config).cuda()
+        model.eval()
         model.load_state_dict(load_state)
 
         all_y = 0
         all_real = 0
 
-        for x,y in tqdm.tqdm(data_test):
+        for x,y in tqdm.tqdm(test_loader):
             x = x.to("cuda", dtype = torch.float32)
             y = y.to("cuda", dtype = torch.long)
 
@@ -48,7 +49,7 @@ def predict():
                 out, memory_tokens = model(x, memory_tokens = None)
 
             out = torch.argmax(out, dim=1)
-            y = y.squeeze(1)
+            # y = y.squeeze(1)
             all = y.size(0)
             result = (out == y).sum().item()
 

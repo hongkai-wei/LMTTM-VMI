@@ -1,4 +1,6 @@
-
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.get_data_iter import get_dataloader
 from model.ttm_basic_network import TokenTuringMachineEncoder
 from utils.log import logger
@@ -8,7 +10,21 @@ import tqdm
 import torchvision.transforms as transforms
 import torch.nn as nn 
 import os
-config = Config.getInstance("base_otehr_dataset.json")
+from torch.utils.data import Dataset,DataLoader
+import sys
+# json_path = sys.argv[1]
+# json_path = "best_memory_token_size_and_dim_and_numTokens.json"
+config = Config.getInstance()
+# path=r"base_ucf.json"
+
+
+
+'''
+2023年11月9日15:29:28
+查验memory是否存储了梯度 这可能导致bug
+'''
+
+# config = Config.getInstance(r"best_process_unit_and_memory_mode.json")
 
 log_writer = logger(config['train']["name"] + "_train")()
 #
@@ -21,23 +37,25 @@ if os.path.exists(checkpoint_path):
 else:
     os.mkdir(checkpoint_path)
 
-transform = transforms.Compose([
-    transforms.Resize((124, 124)),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-])
+data_loader = get_dataloader("train", config=config, download=False, transform=None)
+val_loader = get_dataloader("val", config=config, download=False, transform=None)
 
-data = get_dataloader("train",config=config ,download=False, transform=transform)
-seed = 0
+
+seed = 42
 torch.manual_seed(seed)
 
+
 def init_weights(m):
-    if isinstance(m, nn.Conv3d) or isinstance(m, nn.Linear) :
+    if isinstance(m, nn.Linear) or isinstance(m, nn.Conv1d) or isinstance(m, nn.Conv2d) or isinstance(m, nn.Conv3d):
         nn.init.xavier_uniform_(m.weight)
+        if m.bias is not None:
+            nn.init.constant_(m.bias, 0)
 
 def train():
-    
     memory_tokens = None
+
     model = TokenTuringMachineEncoder(config).cuda()
+
     model.apply(init_weights)##init weight
     if config['train']["optimizer"] == "RMSprop":
         optimizer = torch.optim.RMSprop(
@@ -56,19 +74,19 @@ def train():
     convergence_batch = -1
     convergence_flag = -1
     avg_loss = 0
+    reals_out  =  0
+    reals_all = 0
+    convergence_batch2 = -1
+    acc_lis=[]
 
-    model.train()
 
     for _ in epoch_bar:
         epoch_bar.set_description(
             f"train epoch is {format(_+1)} of {config['train']['epoch']}")
-        bar = tqdm.tqdm(data, leave=False)
+        bar = tqdm.tqdm(data_loader, leave=False)
         losses = []
         for input, target in bar:
-            input = input.to("cuda", dtype=torch.float32)  # B C T H W
-            
-            target = target.to("cuda", dtype=torch.long)  # B 1
-      
+            model.train()
             if (config['train']["load_memory_tokens"]):
                 output, memory_tokens = model(input, memory_tokens)
             else:
@@ -83,40 +101,61 @@ def train():
             log_writer.add_scalar("loss per step", loss.item(), train_nums)
 
             if train_nums % config['train']["val_gap"] == 0:
-                avg_loss = sum(losses)/len(losses)
-
-                if avg_loss <= 0.1 and convergence_flag == -1:
+                avg_loss = sum(losses)/len(losses)          
+                if avg_loss <= 0.2 and convergence_flag == -1:
                     convergence_batch = (train_nums * config["batch_size"])
+                    convergence_batch2 = _ + 1
                     convergence_flag = 1
                 
                 log_writer.add_scalar("loss per 100 step", avg_loss, train_nums)
                 losses = []
-
+                with torch.no_grad():
+                    for val_x, val_y in val_loader:
+                        model.eval()
+                        # val_x = val_x.to("cuda", dtype=torch.float32)
+                        # val_y = val_y.to("cuda", dtype=torch.long)
+                        if (config['train']["load_memory_tokens"]):
+                            out, memory_tokens = model(val_x, memory_tokens)
+                        else:
+                            out, memory_tokens = model(val_x, memory_tokens = None)
+                        out = torch.argmax(out, dim=1)
+                        # val_y = val_y.squeeze(1)
+                        all = val_y.size(0)
+                        result = (out == val_y).sum().item()
+                    reals_out += result
+                    reals_all += all
+                    val_acc = (reals_out/reals_all)*100
+                    log_writer.add_scalar("val acc", val_acc, val_acc_nums)
+                    val_acc_nums += 1
             # Save the model for the next 50 epochs
 
-        if _ >= (config['train']["epoch"]-50):
-            save_name = f"./check_point/{config['train']['name']}/{config['train']['name']}_epoch_{_ -config['train']['epoch'] + 51}.pth"
+        if _ >= (config['train']["epoch"]-5):
+            save_name = f"./check_point/{config['train']['name']}/{config['train']['name']}_epoch_{_ -config['train']['epoch'] + 6}.pth"
             torch.save({"model": model.state_dict(), "memory_tokens": memory_tokens}, save_name)
 
 
-        if _ >= (config['train']["epoch"]-50):
+        if _ >= (config['train']["epoch"]-5):
             save_loss.append(avg_loss)
+            acc_lis.append(val_acc)
 
     final_save_loss = sum(save_loss)/(len(save_loss))
     final_save_loss = round(final_save_loss, 2)
-    print(f"train loss is {final_save_loss},and convergence batch is {convergence_batch}")
+    out_acc=sum(acc_lis)/len(acc_lis)
+    out_accs=round(out_acc,4)
+
+    print(f"train loss is {final_save_loss},and convergence batch is {convergence_batch},and sl_batch is {convergence_batch2},acc is{out_accs}")
 
     if os.path.exists("./experiment"):
         pass
     else:
         os.mkdir("./experiment")
 
-    experiment_path = "./experiment/experiment_record.txt"
+    experiment_path = "./experiment/experiment_record_new.txt"
 
     # Open a file and write data in append mode
     with open(experiment_path, "a") as file:
         # Redirecting data from print to file
-        print(f"{config['train']['name']} convergence_batch: {convergence_batch} , train_loss: {final_save_loss}", file=file)
+        print(f"{config['train']['name']} convergence_batch: {convergence_batch} , train_loss: {final_save_loss},and sL_batch={convergence_batch2},acc is{out_accs}", file=file)
 
 if __name__ == "__main__":
     train()
