@@ -58,7 +58,7 @@ def train(pth:str):
     frozen_dict, memory_tokens = frozen_token_summary_layer(pth)
     model = TokenTuringMachineEncoder(config).cuda()
     model.apply(init_weights)
-    model.load_state_dict(frozen_dict)
+    model.load_state_dict(frozen_dict,strict=False) 
     
 
     if config['train']["optimizer"] == "RMSprop":
