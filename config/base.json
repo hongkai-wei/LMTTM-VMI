@@ -1,5 +1,5 @@
 {
-    "batch_size": 50,
+    "batch_size":128,
     "dataset_name": "organmnist3d",
     "all_dataset_name": "organmnist3d, hmdb_dataset0/1/2",
     "root": "../datasets_data/medmnist",
@@ -28,13 +28,13 @@
     },
     "train": {
         "name": "train_first_",
-        "epoch": 800,
+        "epoch": 400,
         "optimizer": "Adam",
-        "lr": 0.0002,
-        "weight_decay": 0.0002,
+        "lr": 0.0001,
+        "weight_decay": 0.0001,
         "load_memory_tokens": true,
-        "input_H": 27,
-        "input_W": 27,
+        "input_H": 28,
+        "input_W": 28,
         "val_gap": 100
     }
 }
