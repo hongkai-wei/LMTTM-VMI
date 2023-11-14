@@ -13,24 +13,19 @@ import tqdm
 import os
 from utils.video_transforms import *
 
-# json_path = sys.argv[1]
-config = Config.getInstance()
-transform_test = Compose([
-    ShuffleTransforms(mode="CWH")
-])
+json_path = sys.argv[1]
+config = Config.getInstance(json_path)
 
 log_writer = logger(config["train"]["name"] + "_test")()
 test_loader = get_dataloader("test", config=config, download=False, transform=None)
 
 pth = f".\\check_point\\{config['train']['name']}\\"
 pth_files = [f"{pth}{config['train']['name']}_epoch_{i}.pth" for i in range(1, 6)] 
-# pthmodel = f".\\check_point\\exp0_memory8_and_dim32_and_numTokens8\\exp0_memory8_and_dim32_and_numTokens8_epoch_5.pth"
 
 def predict():
     avg_acc = 0
     for i in range(len(pth_files)):
         checkpoint = torch.load(pth_files[i])
-        # checkpoint2 = torch.load(pthmodel)
         load_state = checkpoint["model"]
         load_memory_tokens = checkpoint["memory_tokens"]
         memory_tokens = load_memory_tokens
@@ -76,7 +71,7 @@ def predict():
     else:
         os.mkdir("./experiment")
 
-    experiment_path = "./experiment/experiment_record.txt"
+    experiment_path = "./experiment/experiment.txt"
 
     # Open a file and write data in append mode
     with open(experiment_path, "a") as file:

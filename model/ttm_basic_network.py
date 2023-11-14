@@ -7,6 +7,7 @@ from .tokenLearner_network import TokenLearnerModule, TokenLearnerModuleV11
 from config.configure import Config
 import numpy as np
 import torchvision.models as models
+import clip
 
 class PreProcess(nn.Module): 
     # Input：Batch,Channels,Step,H,W  
@@ -40,13 +41,14 @@ class PreProcessV2(nn.Module):
         return x
 
 class PreProcessV3(nn.Module):
-    def __init__(self):
+    def __init__(self, config):
         super(PreProcessV3, self).__init__()
         self.resnet = models.resnet18(pretrained=False).cuda()
         self.resnet.fc = nn.Identity()
+        self.PreprocessFN =nn.Linear(512, config["model"]["dim"])
         # for param in self.resnet.parameters():
         #     param.requires_grad = False
-    def forward(self, x):
+    def forward(self, x): # 输入数据x的形状为(batch_size, channels, dim, height, width)
         batch_size, channels, steps, height, width = x.size()
         x = x.view(batch_size*steps, channels, height, width)
         x = self.resnet.conv1(x)
@@ -55,12 +57,13 @@ class PreProcessV3(nn.Module):
         x = self.resnet.maxpool(x)
 
         x = self.resnet.layer1(x)
-        x = self.resnet.layer2(x)#128
+        x = self.resnet.layer2(x) #128
         x = self.resnet.layer3(x) #256
-        x = self.resnet.layer4(x)#512
-        he,dim,h,w=x.shape
+        x = self.resnet.layer4(x) #512
+        he,dim,h,w=x.shape # he是batch_size*steps，dim是channels，h是height，w是width
         x=x.view(batch_size,steps,-1,dim)
         return x
+
 
 class TokenLearnerMHA(nn.Module):
     def __init__(self, output_tokens,config) -> None:
@@ -249,14 +252,13 @@ class TokenTuringMachineEncoder(nn.Module):
         self.cls = nn.Linear(config["model"]["dim"], config["model"]["out_class_num"])
         self.pre = PreProcess(config)
         self.preV2 = PreProcessV2(config)
-        self.preV3 = PreProcessV3()
+        self.preV3 = PreProcessV3(config)
         self.relu = nn.ReLU()
         self.pre_dim =nn.Linear(512, config["model"]["dim"])
         self.config = config
 
     def forward(self, input, memory_tokens):
-        input = self.preV3(input)
-        input = self.pre_dim(input)
+        input = self.preV4(input)
         b, t, _, c = input.shape
         outs=[]
         if memory_tokens == None:

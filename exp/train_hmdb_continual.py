@@ -12,9 +12,9 @@ import torch.nn as nn
 import os
 from torch.utils.data import Dataset,DataLoader
 import sys
-# json_path = sys.argv[1]
+json_path = sys.argv[1]
 # json_path = "best_memory_token_size_and_dim_and_numTokens.json"
-config = Config.getInstance()
+config = Config.getInstance(json_path)
 # path=r"base_ucf.json"
 
 
@@ -52,11 +52,6 @@ def init_weights(m):
             nn.init.constant_(m.bias, 0)
 
 def train():
-
-    # pth = f".\\check_point\\exp0_memory8_and_dim32_and_numTokens8\\exp0_memory8_and_dim32_and_numTokens8_epoch_5.pth"
-    # checkpoint = torch.load(pth)
-    # load_memory_tokens = checkpoint["memory_tokens"]
-    # memory_tokens = load_memory_tokens
     memory_tokens = None
 
     model = TokenTuringMachineEncoder(config).cuda()
