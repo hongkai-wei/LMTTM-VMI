@@ -9,6 +9,14 @@ import torch
 import tqdm
 from utils.video_transforms import *
 import torch.nn as nn 
+'''
+1 无冻结模块 看mem无影响
+2  有冻结模块 TL1
+3  有冻结模块 TL2
+4 有冻结模块 TL1+2
+
+
+'''
 config = Config.getInstance()
 log_writer = logger(config['train']["name"] + "second_train")()
 if not os.path.exists("./check_point"):
@@ -49,8 +57,10 @@ def frozen_token_summary_layer(pth_file:str):
 def train(pth:str):
     frozen_dict, memory_tokens = frozen_token_summary_layer(pth)
     model = TokenTuringMachineEncoder(config).cuda()
-    model.load_state_dict(frozen_dict)
     model.apply(init_weights)
+    model.load_state_dict(frozen_dict)
+    
+
     if config['train']["optimizer"] == "RMSprop":
         optimizer = torch.optim.RMSprop(
             model.parameters(), lr=config['train']["lr"], weight_decay=config['train']["weight_decay"])
