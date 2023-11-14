@@ -13,7 +13,7 @@ def get_dataset(split, download=False, transform=None,config=Config.getInstance(
         return MedMNISTDataset(split=split, download=download, transform=transform)
     
     elif config["dataset_name"] == "HMDB_dataset0" or config["dataset_name"] == "HMDB_dataset1" or config["dataset_name"] == "HMDB_dataset2":
-        from .hmdb_data import HMDBDataset, HMDBDataset_download
+        from .HMDB_data import HMDBDataset, HMDBDataset_download
         if not os.path.exists(Config.getInstance()["root"]):
             os.makedirs(Config.getInstance()["root"])
         # HMDBDataset_download(split=split, download=download, transform=transform)

@@ -12,13 +12,10 @@ import torch
 import tqdm
 import os
 from utils.video_transforms import *
-
-json_path = sys.argv[1]
-config = Config.getInstance(json_path)
+config = Config.getInstance()
 transform_test = Compose([
     ShuffleTransforms(mode="CWH")
 ])
-
 log_writer = logger(config["train"]["name"] + "_test")()
 data_test = get_dataloader("test", config = config, download = True, transform = transform_test)
 
@@ -37,30 +34,30 @@ def predict():
 
         all_y = 0
         all_real = 0
+        with torch.no_grad():
+            for x,y in tqdm.tqdm(data_test):
+                x = x.to("cuda", dtype = torch.float32)
+                y = y.to("cuda", dtype = torch.long)
 
-        for x,y in tqdm.tqdm(data_test):
-            x = x.to("cuda", dtype = torch.float32)
-            y = y.to("cuda", dtype = torch.long)
+                if config["train"]["load_memory_tokens"]:
+                    out, memory_tokens = model(x, memory_tokens)
+                else:
+                    out, memory_tokens = model(x, memory_tokens = None)
 
-            if config["train"]["load_memory_tokens"]:
-                out, memory_tokens = model(x, memory_tokens)
-            else:
-                out, memory_tokens = model(x, memory_tokens = None)
+                out = torch.argmax(out, dim=1)
+                y = y.squeeze(1)
+                all = y.size(0)
+                result = (out == y).sum().item()
 
-            out = torch.argmax(out, dim=1)
-            y = y.squeeze(1)
-            all = y.size(0)
-            result = (out == y).sum().item()
+                all_y += all
 
-            all_y += all
-
-            all_real += result
-            ###   B,C,STEP,H,W
-            print("Total sample size:",all_y,"Predicting the right amount:",all_real)
-            print("acc is {}%".format((all_real/all_y)*100))
-            acc = (all_real/all_y)*100
-            log_writer.add_scalar("acc per 100 step ", acc, i)
-            
+                all_real += result
+                ###   B,C,STEP,H,W
+                print("Total sample size:",all_y,"Predicting the right amount:",all_real)
+                print("acc is {}%".format((all_real/all_y)*100))
+                acc = (all_real/all_y)*100
+                log_writer.add_scalar("acc per 100 step ", acc, i)
+                
         avg_acc += acc
 
     test_acc = avg_acc/(i+1)
