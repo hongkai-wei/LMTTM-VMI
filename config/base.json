@@ -2,7 +2,7 @@
     "batch_size": 36,
     "dataset_name": "HMDB_dataset0",
     "all_dataset_name": "organmnist3d, hmdb_dataset0/1/2",
-    "root": "./datasets_data/hmdb/dataset0",
+    "root": "../datasets_data/medmnist",
     "all_root": "./datasets_data/medmnist  ./datasets_data/hmdb/dataset0 1 2",
     "log_dir": "./logs",
     "checkpoint_dir": "./checkpoints",
@@ -20,10 +20,10 @@
         "all_steps":"18, 28",
         "out_class_num": 17,
         "patch_size": 3,
-        "Read_use_positional_embedding": false,
+        "Read_use_positional_embedding": true,
         "Write_use_positional_embedding": true,
         "load_memory_add_noise": true,
-        "load_memory_add_noise_mode": "normal",
+        "load_memory_add_noise_mode": "exp",
         "all_load_memory_add_noise_mode": "None, uniform, laplace, normal, exp, gamma, poisson",
         "variant": "variant1"
     },
@@ -34,8 +34,8 @@
         "lr": 0.00001,
         "weight_decay": 0.00001,
         "load_memory_tokens": true,
-        "input_H": 84,
-        "input_W": 84,
-        "val_gap": 20
+        "input_H": 28,
+        "input_W": 28,
+        "val_gap": 100
     }
 }

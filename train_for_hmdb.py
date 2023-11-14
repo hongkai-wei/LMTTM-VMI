@@ -12,23 +12,8 @@ import torch.nn as nn
 import os
 from torch.utils.data import Dataset,DataLoader
 import sys
-# json_path = sys.argv[1]
-# json_path = "best_memory_token_size_and_dim_and_numTokens.json"
 config = Config.getInstance()
-# path=r"base_ucf.json"
-
-
-
-'''
-2023年11月9日15:29:28
-查验memory是否存储了梯度 这可能导致bug
-'''
-
-# config = Config.getInstance(r"best_process_unit_and_memory_mode.json")
-
 log_writer = logger(config['train']["name"] + "_train")()
-#
-
 if not os.path.exists("./check_point"):
     os.mkdir("./check_point")
 checkpoint_path = f"./check_point/{config['train']['name']}"
@@ -36,21 +21,15 @@ if os.path.exists(checkpoint_path):
     pass
 else:
     os.mkdir(checkpoint_path)
-
 data_loader = get_dataloader("train", config=config, download=False, transform=None)
 val_loader = get_dataloader("val", config=config, download=False, transform=None)
-
-
 seed = 42
 torch.manual_seed(seed)
-
-
 def init_weights(m):
     if isinstance(m, nn.Linear) or isinstance(m, nn.Conv1d) or isinstance(m, nn.Conv2d) or isinstance(m, nn.Conv3d):
         nn.init.xavier_uniform_(m.weight)
         if m.bias is not None:
             nn.init.constant_(m.bias, 0)
-
 def train():
 
     # pth = f".\\check_point\\exp0_memory8_and_dim32_and_numTokens8\\exp0_memory8_and_dim32_and_numTokens8_epoch_5.pth"
@@ -58,10 +37,8 @@ def train():
     # load_memory_tokens = checkpoint["memory_tokens"]
     # memory_tokens = load_memory_tokens
     memory_tokens = None
-
     model = TokenTuringMachineEncoder(config).cuda()
-
-    model.apply(init_weights)##init weight
+    model.apply(init_weights)
     if config['train']["optimizer"] == "RMSprop":
         optimizer = torch.optim.RMSprop(
             model.parameters(), lr=config['train']["lr"], weight_decay=config['train']["weight_decay"])
@@ -75,7 +52,6 @@ def train():
     val_acc_nums = 0
     val_acc = 0
     save_loss = []
-
     convergence_batch = -1
     convergence_flag = -1
     avg_loss = 0
@@ -83,8 +59,6 @@ def train():
     reals_all = 0
     convergence_batch2 = -1
     acc_lis=[]
-
-
     for _ in epoch_bar:
         epoch_bar.set_description(
             f"train epoch is {format(_+1)} of {config['train']['epoch']}")
@@ -104,21 +78,20 @@ def train():
             losses.append(loss.item())
             bar.set_postfix(loss=loss.item(), val_acc=val_acc)
             log_writer.add_scalar("loss per step", loss.item(), train_nums)
-
             if train_nums % config['train']["val_gap"] == 0:
                 avg_loss = sum(losses)/len(losses)          
                 if avg_loss <= 0.2 and convergence_flag == -1:
                     convergence_batch = (train_nums * config["batch_size"])
                     convergence_batch2 = _ + 1
                     convergence_flag = 1
-                
+            
                 log_writer.add_scalar("loss per 100 step", avg_loss, train_nums)
                 losses = []
                 with torch.no_grad():
                     for val_x, val_y in val_loader:
                         model.eval()
-                        # val_x = val_x.to("cuda", dtype=torch.float32)
-                        # val_y = val_y.to("cuda", dtype=torch.long)
+                        val_x = val_x.to("cuda", dtype=torch.float32)
+                        val_y = val_y.to("cuda", dtype=torch.long)
                         if (config['train']["load_memory_tokens"]):
                             out, memory_tokens = model(val_x, memory_tokens)
                         else:

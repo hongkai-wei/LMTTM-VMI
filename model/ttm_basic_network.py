@@ -40,9 +40,9 @@ class PreProcessV2(nn.Module):
         x = self.lay(x)
         return x
 
-class PreProcessV3(nn.Module):
-    def __init__(self, config):
-        super(PreProcessV3, self).__init__()
+
+    def __init__(self):
+        super(PreProcessV2, self).__init__()
         self.resnet = models.resnet18(pretrained=False).cuda()
         self.resnet.fc = nn.Identity()
         self.PreprocessFN =nn.Linear(512, config["model"]["dim"])
@@ -251,14 +251,12 @@ class TokenTuringMachineEncoder(nn.Module):
         self.tokenTuringMachineUnit = TokenTuringMachineUnit(config)
         self.cls = nn.Linear(config["model"]["dim"], config["model"]["out_class_num"])
         self.pre = PreProcess(config)
-        self.preV2 = PreProcessV2(config)
-        self.preV3 = PreProcessV3(config)
         self.relu = nn.ReLU()
         self.pre_dim =nn.Linear(512, config["model"]["dim"])
         self.config = config
 
     def forward(self, input, memory_tokens):
-        input = self.preV4(input)
+        input = self.pre(input)
         b, t, _, c = input.shape
         outs=[]
         if memory_tokens == None:
@@ -268,14 +266,13 @@ class TokenTuringMachineEncoder(nn.Module):
         for i in range(t):
             memory_tokens, out = self.tokenTuringMachineUnit(memory_tokens, input[:,i,:,:])
             outs.append(out)
-
-        
+    
         outs = torch.stack(outs, dim=1)
         out = outs.view(self.config["batch_size"], -1, self.config["model"]["dim"])
         out = out.transpose(1, 2)
         out = nn.AdaptiveAvgPool1d(1)(out) 
         out = out.squeeze(2)
-        # print(out.shape)
+
 
         if self.config["model"]["load_memory_add_noise"]:
             if self.config["model"]["load_memory_add_noise_mode"] == "normal":

@@ -12,29 +12,35 @@ import torch
 import tqdm
 import os
 from utils.video_transforms import *
-config = Config.getInstance()
+# json_path = "best_memory_token_size_and_dim_and_numTokens.json"
+json_path = sys.argv[1]
+config = Config.getInstance(json_path)
+transform_test = Compose([
+     ShuffleTransforms(mode="CWH")
+ ])
+
 log_writer = logger(config["train"]["name"] + "_test")()
-test_loader = get_dataloader("test", config=config, download=False, transform=None)
+data_test = get_dataloader("test", config = config ,download = True,transform = transform_test )
+
 pth = f".\\check_point\\{config['train']['name']}\\"
-pth_files = [f"{pth}{config['train']['name']}_epoch_{i}.pth" for i in range(1, 6)] 
-# pthmodel = f".\\check_point\\exp0_memory8_and_dim32_and_numTokens8\\exp0_memory8_and_dim32_and_numTokens8_epoch_5.pth"
+pth_files = [f"{pth}{config['train']['name']}_epoch_{i}.pth" for i in range(1, 51)] 
 
 def predict():
     avg_acc = 0
-    for i in range(len(pth_files)):
+    for i in tqdm.tqdm(range(len(pth_files)),leave=True):
         checkpoint = torch.load(pth_files[i])
-        # checkpoint2 = torch.load(pthmodel)
         load_state = checkpoint["model"]
         load_memory_tokens = checkpoint["memory_tokens"]
         memory_tokens = load_memory_tokens
         model = TokenTuringMachineEncoder(config).cuda()
-        model.eval()
         model.load_state_dict(load_state)
+
+        model.eval()
 
         all_y = 0
         all_real = 0
         with torch.no_grad():
-            for x,y in tqdm.tqdm(test_loader):
+            for x,y in tqdm.tqdm(data_test,leave=False):
                 x = x.to("cuda", dtype = torch.float32)
                 y = y.to("cuda", dtype = torch.long)
 
@@ -44,6 +50,7 @@ def predict():
                     out, memory_tokens = model(x, memory_tokens = None)
 
                 out = torch.argmax(out, dim=1)
+                y = y.squeeze(1)
                 all = y.size(0)
                 result = (out == y).sum().item()
 
