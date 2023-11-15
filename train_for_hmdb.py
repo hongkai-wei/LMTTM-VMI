@@ -21,16 +21,25 @@ if os.path.exists(checkpoint_path):
     pass
 else:
     os.mkdir(checkpoint_path)
+
 data_loader = get_dataloader("train", config=config, download=False, transform=None)
 val_loader = get_dataloader("val", config=config, download=False, transform=None)
-seed = 42
-torch.manual_seed(seed)
+
+torch.manual_seed(42)
+os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
+torch.use_deterministic_algorithms(True)
+
 def init_weights(m):
     if isinstance(m, nn.Linear) or isinstance(m, nn.Conv1d) or isinstance(m, nn.Conv2d) or isinstance(m, nn.Conv3d):
         nn.init.xavier_uniform_(m.weight)
         if m.bias is not None:
             nn.init.constant_(m.bias, 0)
 def train():
+
+    # pth = f".\\check_point\\exp0_memory8_and_dim32_and_numTokens8\\exp0_memory8_and_dim32_and_numTokens8_epoch_5.pth"
+    # checkpoint = torch.load(pth)
+    # load_memory_tokens = checkpoint["memory_tokens"]
+    # memory_tokens = load_memory_tokens
     memory_tokens = None
     model = TokenTuringMachineEncoder(config).cuda()
     model.apply(init_weights)
@@ -102,12 +111,12 @@ def train():
                     val_acc_nums += 1
             # Save the model for the next 50 epochs
 
-        if _ >= (config['train']["epoch"]-5):
+        if _ >= (config['train']["epoch"]-50):
             save_name = f"./check_point/{config['train']['name']}/{config['train']['name']}_epoch_{_ -config['train']['epoch'] + 6}.pth"
             torch.save({"model": model.state_dict(), "memory_tokens": memory_tokens}, save_name)
 
 
-        if _ >= (config['train']["epoch"]-5):
+        if _ >= (config['train']["epoch"]-50):
             save_loss.append(avg_loss)
             acc_lis.append(val_acc)
 
@@ -123,7 +132,7 @@ def train():
     else:
         os.mkdir("./experiment")
 
-    experiment_path = "./experiment/experiment_record_new.txt"
+    experiment_path = "./experiment/experiment.txt"
 
     # Open a file and write data in append mode
     with open(experiment_path, "a") as file:

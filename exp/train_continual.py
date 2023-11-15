@@ -35,7 +35,9 @@ transform_val = Compose([
 data_train = get_dataloader("train",config=config ,download=True,transform=transform_train)
 data_val = get_dataloader("val",config=config,download=True, transform=transform_val)
 
-torch.manual_seed(0)
+torch.manual_seed(42)
+os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
+torch.use_deterministic_algorithms(True)
 
 def init_weights(m):
     if isinstance(m, nn.Linear) or isinstance(m, nn.Conv1d) or isinstance(m, nn.Conv2d) or isinstance(m, nn.Conv3d):
@@ -99,22 +101,22 @@ def train():
                 
                 log_writer.add_scalar("loss per 100 step", avg_loss, train_nums)
                 losses = []
-
-                for val_x, val_y in data_val:
-                    model.eval()
-                    val_x = val_x.to("cuda", dtype=torch.float32)
-                    val_y = val_y.to("cuda", dtype=torch.long)
-                    if (config['train']["load_memory_tokens"]):
-                        out, memory_tokens = model(val_x, memory_tokens)
-                    else:
-                        out, memory_tokens = model(val_x, memory_tokens = None)
-                    out = torch.argmax(out, dim=1)
-                    val_y = val_y.squeeze(1)
-                    all = val_y.size(0)
-                    result = (out == val_y).sum().item()
-                    val_acc = (result/all)*100
-                    log_writer.add_scalar("val acc", val_acc, val_acc_nums)
-                    val_acc_nums += 1
+                with torch.no_grad():
+                    for val_x, val_y in data_val:
+                        model.eval()
+                        val_x = val_x.to("cuda", dtype=torch.float32)
+                        val_y = val_y.to("cuda", dtype=torch.long)
+                        if (config['train']["load_memory_tokens"]):
+                            out, memory_tokens = model(val_x, memory_tokens)
+                        else:
+                            out, memory_tokens = model(val_x, memory_tokens = None)
+                        out = torch.argmax(out, dim=1)
+                        val_y = val_y.squeeze(1)
+                        all = val_y.size(0)
+                        result = (out == val_y).sum().item()
+                        val_acc = (result/all)*100
+                        log_writer.add_scalar("val acc", val_acc, val_acc_nums)
+                        val_acc_nums += 1
             # Save the model for the next 50 epochs
 
         if _ >= (config['train']["epoch"]-50):

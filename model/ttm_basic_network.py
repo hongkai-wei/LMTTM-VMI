@@ -258,6 +258,9 @@ class TokenTuringMachineEncoder(nn.Module):
         outs=[]
         if memory_tokens == None:
             memory_tokens = torch.zeros(b,self.config["model"]["memory_tokens_size"],c).cuda() #  c, h, w
+            # np.random.seed(42)
+            # random_tokens = torch.rand(b, self.config["model"]["memory_tokens_size"], c).cuda()
+            # memory_tokens = torch.exp(random_tokens)
         else:
             memory_tokens = memory_tokens.detach()
         for i in range(t):
@@ -272,6 +275,7 @@ class TokenTuringMachineEncoder(nn.Module):
 
 
         if self.config["model"]["load_memory_add_noise"]:
+            np.random.seed(42)
             if self.config["model"]["load_memory_add_noise_mode"] == "normal":
                 noise = torch.randn_like(memory_tokens)
                 noise = noise.cuda()
@@ -292,6 +296,8 @@ class TokenTuringMachineEncoder(nn.Module):
                 noise = noise.cuda()
                 noise_rate = 0.3
                 memory_tokens = memory_tokens + noise*noise_rate
+                # 在训练循环之外生成噪声张量
+
             elif self.config["model"]["load_memory_add_noise_mode"] == "gamma":
                 shape = torch.tensor([2.0])  # Shape parameters of the Gamma distribution
                 scale = torch.tensor([2.0])  # Scale parameters of the Gamma distribution

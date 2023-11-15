@@ -28,7 +28,9 @@ transform_val = Compose([
 
 data_train = get_dataloader("train",config=config ,download=False,transform=transform_train)
 data_val = get_dataloader("val",config=config,download=False, transform=transform_val)
-torch.manual_seed(0)
+torch.manual_seed(42)
+os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
+torch.use_deterministic_algorithms(True)
 
 def init_weights(m):
     if isinstance(m, nn.Linear) or isinstance(m, nn.Conv1d) or isinstance(m, nn.Conv2d) or isinstance(m, nn.Conv3d):

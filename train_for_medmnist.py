@@ -21,7 +21,6 @@ if os.path.exists(checkpoint_path):
     pass
 else:
     os.mkdir(checkpoint_path)
-#
 
 transform_train = Compose([
     ShuffleTransforms(mode="CWH")
@@ -30,11 +29,12 @@ transform_val = Compose([
     ShuffleTransforms(mode="CWH")
 ])
 
-data_train = get_dataloader("train",config=config ,download=False, transform=transform_train)
-data_val = get_dataloader("val",config=config,download=False, transform=transform_val)
+data_train = get_dataloader("train",config=config ,download=True, transform=transform_train)
+data_val = get_dataloader("val",config=config,download=True, transform=transform_val)
 
-seed = 0
-torch.manual_seed(seed)
+torch.manual_seed(42)
+os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
+torch.use_deterministic_algorithms(True)
 
 def init_weights(m):
     if isinstance(m, nn.Linear) or isinstance(m, nn.Conv1d) or isinstance(m, nn.Conv2d) or isinstance(m, nn.Conv3d):
@@ -42,11 +42,12 @@ def init_weights(m):
         if m.bias is not None:
             nn.init.constant_(m.bias, 0)
 
+
 def train():
     
     memory_tokens = None
     model = TokenTuringMachineEncoder(config).cuda()
-    model.apply(init_weights)##init weight
+    model.apply(init_weights) # init weight
     if config['train']["optimizer"] == "RMSprop":
         optimizer = torch.optim.RMSprop(
             model.parameters(), lr=config['train']["lr"], weight_decay=config['train']["weight_decay"])
@@ -115,12 +116,12 @@ def train():
                         val_acc_nums += 1
 
             # Save the model for the next 50 epochs
-        if _ >= (config['train']["epoch"]-5):
+        if _ >= (config['train']["epoch"]-50):
             save_name = f"./check_point/{config['train']['name']}/{config['train']['name']}_epoch_{_ -config['train']['epoch'] + 51}.pth"
             torch.save({"model": model.state_dict(), "memory_tokens": memory_tokens}, save_name)
 
 
-        if _ >= (config['train']["epoch"]-5):
+        if _ >= (config['train']["epoch"]-50):
             save_loss.append(avg_loss)
 
     final_save_loss = sum(save_loss)/(len(save_loss))

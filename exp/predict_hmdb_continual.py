@@ -12,12 +12,12 @@ import torch
 import tqdm
 import os
 from utils.video_transforms import *
-config = Config.getInstance()
-transform_test = Compose([
-    ShuffleTransforms(mode="CWH")
-])
+
+json_path = sys.argv[1]
+config = Config.getInstance(json_path)
+
 log_writer = logger(config["train"]["name"] + "_test")()
-data_test = get_dataloader("test", config = config, download = True, transform = transform_test)
+test_loader = get_dataloader("test", config=config, download=False, transform=None)
 
 pth = f".\\check_point\\{config['train']['name']}\\"
 pth_files = [f"{pth}{config['train']['name']}_epoch_{i}.pth" for i in range(1, 51)] 
@@ -30,34 +30,35 @@ def predict():
         load_memory_tokens = checkpoint["memory_tokens"]
         memory_tokens = load_memory_tokens
         model = TokenTuringMachineEncoder(config).cuda()
+        model.eval()
         model.load_state_dict(load_state)
 
         all_y = 0
         all_real = 0
-        with torch.no_grad():
-            for x,y in tqdm.tqdm(data_test):
-                x = x.to("cuda", dtype = torch.float32)
-                y = y.to("cuda", dtype = torch.long)
 
-                if config["train"]["load_memory_tokens"]:
-                    out, memory_tokens = model(x, memory_tokens)
-                else:
-                    out, memory_tokens = model(x, memory_tokens = None)
+        for x,y in tqdm.tqdm(test_loader):
+            x = x.to("cuda", dtype = torch.float32)
+            y = y.to("cuda", dtype = torch.long)
 
-                out = torch.argmax(out, dim=1)
-                y = y.squeeze(1)
-                all = y.size(0)
-                result = (out == y).sum().item()
+            if config["train"]["load_memory_tokens"]:
+                out, memory_tokens = model(x, memory_tokens)
+            else:
+                out, memory_tokens = model(x, memory_tokens = None)
 
-                all_y += all
+            out = torch.argmax(out, dim=1)
+            # y = y.squeeze(1)
+            all = y.size(0)
+            result = (out == y).sum().item()
 
-                all_real += result
-                ###   B,C,STEP,H,W
-                print("Total sample size:",all_y,"Predicting the right amount:",all_real)
-                print("acc is {}%".format((all_real/all_y)*100))
-                acc = (all_real/all_y)*100
-                log_writer.add_scalar("acc per 100 step ", acc, i)
-                
+            all_y += all
+
+            all_real += result
+            ###   B,C,STEP,H,W
+            print("Total sample size:",all_y,"Predicting the right amount:",all_real)
+            print("acc is {}%".format((all_real/all_y)*100))
+            acc = (all_real/all_y)*100
+            log_writer.add_scalar("acc per 100 step ", acc, i)
+            
         avg_acc += acc
 
     test_acc = avg_acc/(i+1)
@@ -70,7 +71,7 @@ def predict():
     else:
         os.mkdir("./experiment")
 
-    experiment_path = "./experiment/experiment_record.txt"
+    experiment_path = "./experiment/experiment.txt"
 
     # Open a file and write data in append mode
     with open(experiment_path, "a") as file:
