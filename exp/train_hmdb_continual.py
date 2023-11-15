@@ -41,9 +41,9 @@ data_loader = get_dataloader("train", config=config, download=False, transform=N
 val_loader = get_dataloader("val", config=config, download=False, transform=None)
 
 
-seed = 42
-torch.manual_seed(seed)
-
+torch.manual_seed(42)
+os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
+torch.use_deterministic_algorithms(True)
 
 def init_weights(m):
     if isinstance(m, nn.Linear) or isinstance(m, nn.Conv1d) or isinstance(m, nn.Conv2d) or isinstance(m, nn.Conv3d):
@@ -129,12 +129,12 @@ def train():
                     val_acc_nums += 1
             # Save the model for the next 50 epochs
 
-        if _ >= (config['train']["epoch"]-5):
+        if _ >= (config['train']["epoch"]-50):
             save_name = f"./check_point/{config['train']['name']}/{config['train']['name']}_epoch_{_ -config['train']['epoch'] + 6}.pth"
             torch.save({"model": model.state_dict(), "memory_tokens": memory_tokens}, save_name)
 
 
-        if _ >= (config['train']["epoch"]-5):
+        if _ >= (config['train']["epoch"]-50):
             save_loss.append(avg_loss)
             acc_lis.append(val_acc)
 

@@ -3,6 +3,7 @@ import torch.utils.data as data
 import medmnist
 from medmnist import INFO, Evaluator
 from torch.utils.data import DataLoader
+import torch
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

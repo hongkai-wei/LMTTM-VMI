@@ -20,7 +20,7 @@ log_writer = logger(config["train"]["name"] + "_test")()
 test_loader = get_dataloader("test", config=config, download=False, transform=None)
 
 pth = f".\\check_point\\{config['train']['name']}\\"
-pth_files = [f"{pth}{config['train']['name']}_epoch_{i}.pth" for i in range(1, 6)] 
+pth_files = [f"{pth}{config['train']['name']}_epoch_{i}.pth" for i in range(1, 51)] 
 
 def predict():
     avg_acc = 0

@@ -5,8 +5,6 @@ import torch
 
 def get_dataloader(split,config, download=False, transform=None):
     basic_data = datasets.get_dataset(split=split, download=download, transform=transform,config=config)
-    seed = 42
-    torch.manual_seed(seed)
     dataloader = data.DataLoader(
         basic_data, batch_size=config["batch_size"], num_workers=0, drop_last=True, shuffle=True)
     return dataloader

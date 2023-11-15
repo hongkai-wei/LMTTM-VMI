@@ -7,7 +7,6 @@ from .tokenLearner_network import TokenLearnerModule, TokenLearnerModuleV11
 from config.configure import Config
 import numpy as np
 import torchvision.models as models
-import clip
 
 class PreProcess(nn.Module): 
     # Input：Batch,Channels,Step,H,W  
@@ -45,10 +44,9 @@ class PreProcessV2(nn.Module):
         super(PreProcessV2, self).__init__()
         self.resnet = models.resnet18(pretrained=False).cuda()
         self.resnet.fc = nn.Identity()
-        self.PreprocessFN =nn.Linear(512, config["model"]["dim"])
         # for param in self.resnet.parameters():
         #     param.requires_grad = False
-    def forward(self, x): # 输入数据x的形状为(batch_size, channels, dim, height, width)
+    def forward(self, x):
         batch_size, channels, steps, height, width = x.size()
         x = x.view(batch_size*steps, channels, height, width)
         x = self.resnet.conv1(x)
@@ -57,13 +55,12 @@ class PreProcessV2(nn.Module):
         x = self.resnet.maxpool(x)
 
         x = self.resnet.layer1(x)
-        x = self.resnet.layer2(x) #128
+        x = self.resnet.layer2(x)#128
         x = self.resnet.layer3(x) #256
-        x = self.resnet.layer4(x) #512
-        he,dim,h,w=x.shape # he是batch_size*steps，dim是channels，h是height，w是width
+        x = self.resnet.layer4(x)#512
+        he,dim,h,w=x.shape
         x=x.view(batch_size,steps,-1,dim)
         return x
-
 
 class TokenLearnerMHA(nn.Module):
     def __init__(self, output_tokens,config) -> None:
@@ -261,6 +258,9 @@ class TokenTuringMachineEncoder(nn.Module):
         outs=[]
         if memory_tokens == None:
             memory_tokens = torch.zeros(b,self.config["model"]["memory_tokens_size"],c).cuda() #  c, h, w
+            # np.random.seed(42)
+            # random_tokens = torch.rand(b, self.config["model"]["memory_tokens_size"], c).cuda()
+            # memory_tokens = torch.exp(random_tokens)
         else:
             memory_tokens = memory_tokens.detach()
         for i in range(t):
@@ -275,6 +275,7 @@ class TokenTuringMachineEncoder(nn.Module):
 
 
         if self.config["model"]["load_memory_add_noise"]:
+            np.random.seed(42)
             if self.config["model"]["load_memory_add_noise_mode"] == "normal":
                 noise = torch.randn_like(memory_tokens)
                 noise = noise.cuda()
@@ -295,6 +296,8 @@ class TokenTuringMachineEncoder(nn.Module):
                 noise = noise.cuda()
                 noise_rate = 0.3
                 memory_tokens = memory_tokens + noise*noise_rate
+                # 在训练循环之外生成噪声张量
+
             elif self.config["model"]["load_memory_add_noise_mode"] == "gamma":
                 shape = torch.tensor([2.0])  # Shape parameters of the Gamma distribution
                 scale = torch.tensor([2.0])  # Scale parameters of the Gamma distribution
