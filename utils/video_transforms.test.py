@@ -4,6 +4,7 @@ from video_transforms import NoiseTransforms, ShuffleTransforms
 
 # Test ShuffleTransforms
 def test_shuffle_transforms():
+    np.random.seed(42)
     # Test shuffle frames
     shuffle_transforms = ShuffleTransforms(mode='T')
     clip = torch.rand(3, 16, 224, 224)
