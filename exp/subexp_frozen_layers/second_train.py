@@ -9,13 +9,10 @@ import torch
 import tqdm
 from utils.video_transforms import *
 import torch.nn as nn 
-'''
-1 无冻结模块 看mem无影响
-2  有冻结模块 TL1
-3  有冻结模块 TL2
-4 有冻结模块 TL1+2
-
-
+'''The best effect of the second loading experiment is:
+        Using the TokenLearner kernel as CNN,
+        The initial loaded Memory is Zero,
+        The tokenLearner loaded twice includes reading and writing Summerize.
 '''
 config = Config.getInstance()
 log_writer = logger(config['train']["name"] + "second_train")()
@@ -52,13 +49,21 @@ def frozen_token_summary_layer(pth_file:str):
     weight = pth_load["model"]
     new_dict = {}
     for i in weight.keys():
-        if "tokenLearnerMHA1" in i or "tokenLearner1" in i:
-            new_dict[i] = weight[i]
+         if "tokenLearnerMHA1" in i or "tokenLearner1" in i or "tokenLearnerMHA2" in i or "tokenLearner2" in i:
+             new_dict[i] = weight[i]
+        # if "tokenLearnerMHA1" in i or "tokenLearner1" in i:
+        #     new_dict[i] = weight[i]
+        # if "tokenLearnerMHA2" in i or "tokenLearner2" in i:
+        #      new_dict[i] = weight[i]
     
     return new_dict,memory_tokens
 
 def train(pth:str):
-    frozen_dict, memory_tokens = frozen_token_summary_layer(pth)
+    # frozen_dict, memory_tokens = frozen_token_summary_layer(pth)
+
+    frozen_dict, _ = frozen_token_summary_layer(pth)
+    memory_tokens = None
+
     model = TokenTuringMachineEncoder(config).cuda()
     model.apply(init_weights)
     model.load_state_dict(frozen_dict,strict=False) 
@@ -146,5 +151,5 @@ def train(pth:str):
     with open(experiment_path, "a") as file:
         print(f"{config['train']['name']} convergence_batch: {convergence_batch} , train_loss: {final_save_loss}", file=file)
 if __name__ == "__main__":
-    pth=r"your_corresponding_pth_file"
+    pth=r"E:\TTM-Github\TTM-Pytorch\check_point\exp1_mem0\exp1_mem0_epoch_42.pth"
     train(pth)

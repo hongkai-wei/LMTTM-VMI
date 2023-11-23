@@ -1,5 +1,5 @@
 {
-    "batch_size": 36,
+    "batch_size": 64,
     "dataset_name": "organmnist3d",
     "all_dataset_name": "organmnist3d, hmdb_dataset0/1/2",
     "root": "./datasets_data/medmnist",
@@ -25,11 +25,11 @@
         "load_memory_add_noise": true,
         "load_memory_add_noise_mode": "exp",
         "all_load_memory_add_noise_mode": "None, uniform, laplace, normal, exp, gamma, poisson",
-        "variant": "variant1"
+        "variant": "variant0"
     },
     "train": {
-        "name": "exp0_TL_TL0",
-        "epoch": 600,
+        "name": "exp2_mem0_TL1",
+        "epoch": 300,
         "optimizer": "Adam",
         "lr": 0.0001,
         "weight_decay": 0.0001,
