@@ -17,9 +17,9 @@ def run_exp(exp_json):
     # os.system("python exp\\tesorboard2excel.py " + exp_json)
 
 train_config = {
-    "name": ["exp0_TL_TL"],
+    "name": ["exp0" , "exp1"],
 
-    "variant":["variant1"]
+    "variant":["variant0", "variant1"]
 }
 
 if __name__ == "__main__":

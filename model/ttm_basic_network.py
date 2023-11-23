@@ -136,8 +136,6 @@ class TokenAddEraseWrite(nn.Module):
         # Changing the Output Shape
         # output = self.trans_outdim(self.query, output, output)[0]
 
-
-
         return output
 
 

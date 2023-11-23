@@ -1,8 +1,3 @@
-'''
-只需要改path为你tensorbarod生成的event即可
-调用：  export(tag_names, "要生产的xlsx名字，后缀名不要写错了")
-
-'''
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

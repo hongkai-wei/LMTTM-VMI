@@ -12,13 +12,14 @@ The best parameter:
 exp_json = "base.json"
 
 def run_exp(exp_json):
-    os.system("python exp\\second_train.py " + exp_json)
-    os.system("python exp\\predict_continual.py " + exp_json)
+    os.system("python exp\\subexp_frozen_layers\\second_train.py " + exp_json)
+    os.system("python exp\\subexp_frozen_layers\\predict_continual.py " + exp_json)
     # os.system("python exp\\tesorboard2excel.py " + exp_json)
 
 train_config = {
-    "name": ["exp2"]
+    "name": ["exp2_mem0_TL1"]
 }
+
 
 if __name__ == "__main__":
     for i in range(len(train_config["name"])):
@@ -26,7 +27,6 @@ if __name__ == "__main__":
             data = json.load(file)
 
         data['train']['name'] = train_config["name"][i]
-        data['model']['variant'] = train_config["variant"][i]
 
         with open(f'./config/{exp_json}', 'w') as file:
             json.dump(data, file, indent=4)
