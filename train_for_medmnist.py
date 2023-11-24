@@ -30,7 +30,7 @@ transform_val = Compose([
 ])
 
 data_train = get_dataloader("train",config=config ,download=True, transform=transform_train)
-data_val = get_dataloader("val",config=config,download=True, transform=transform_val)
+data_val = get_dataloader("train",config=config,download=True, transform=transform_train)
 
 torch.manual_seed(42)
 os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'

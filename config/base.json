@@ -28,7 +28,7 @@
         "variant": "variant0"
     },
     "train": {
-        "name": "exp2_mem0_TL1",
+        "name": "exp_6666667_42",
         "epoch": 300,
         "optimizer": "Adam",
         "lr": 0.0001,
