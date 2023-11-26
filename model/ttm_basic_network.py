@@ -7,7 +7,7 @@ from .tokenLearner_network import TokenLearnerModule, TokenLearnerModuleV11
 from config.configure import Config
 import numpy as np
 import torchvision.models as models
-
+    
 class PreProcess(nn.Module): 
     # Input：Batch,Channels,Step,H,W  
     # Output：Batch，Step，Tokens，Channels
@@ -138,12 +138,28 @@ class TokenAddEraseWrite(nn.Module):
 
         return output
 
+class SmallMemoryToekns(nn.Module):
+    def __init__(self,config) -> None:
+        super(SmallMemoryToekns, self).__init__()
+        self.now = 0
+
+    def SplitMemoryTokens(self, memory_tokens):
+        num_tokens = memory_tokens.size(1)
+        num_blocks = 8
+        block_size = num_tokens // num_blocks
+        self.split_memory_tokens = []
+        for i in range(num_blocks):
+            start = i * block_size
+            end = (i + 1) * block_size
+            self.split_memory_tokens.append(memory_tokens[:, start:end, :])
+        return self.split_memory_tokens
+    
 
 class TokenTuringMachineUnit(nn.Module):
     def __init__(self,config) -> None:
         super(TokenTuringMachineUnit, self).__init__()
         self.tokenLearner1 = TokenLearnerModule(in_channels=config["model"]["dim"], num_tokens=config["model"]["num_tokens"], num_groups=1)
-        self.tokenLearner2 = TokenLearnerModule(in_channels=config["model"]["dim"], num_tokens=config["model"]["memory_tokens_size"], num_groups=1)
+        self.tokenLearner2 = TokenLearnerModule(in_channels=config["model"]["dim"], num_tokens=24, num_groups=1)
         self.tokenLearnerV11_1 = TokenLearnerModuleV11(in_channels=config["model"]["dim"], num_tokens=config["model"]["num_tokens"], num_groups=1)
         self.tokenLearnerV11_2 = TokenLearnerModuleV11(in_channels=config["model"]["dim"], num_tokens=config["model"]["memory_tokens_size"], num_groups=1)
         self.transformerBlock = nn.TransformerEncoderLayer(d_model=config["model"]["dim"], nhead=8, dim_feedforward=config["model"]["dim"] * 3, dropout=0.2)
@@ -172,20 +188,30 @@ class TokenTuringMachineUnit(nn.Module):
         self.dropout = nn.Dropout(config["model"]["drop_r"])
         self.config = config
 
-    def forward(self, memory_tokens, input_tokens):
-        all_tokens = torch.cat((memory_tokens, input_tokens), dim=1)
+    def forward(self, current_memory_block, prev_memory_block, next_memory_block, input_tokens):
+
+        current_all_tokens = torch.cat((current_memory_block, input_tokens), dim=1)
+        prev_all_tokens = torch.cat((prev_memory_block, input_tokens), dim=1)
+        next_all_tokens = torch.cat((next_memory_block, input_tokens), dim=1)
+
         # Read add posiutional
         if self.config["model"]["Read_use_positional_embedding"]:
-            all_tokens = all_tokens.cuda()
+            current_all_tokens = current_all_tokens.cuda()
+
             posemb_init = torch.nn.Parameter(torch.empty(
-                1, all_tokens.size(1), all_tokens.size(2))).cuda()
+                1, current_all_tokens.size(1), current_all_tokens.size(2))).cuda()
             init.normal_(posemb_init, std=0.02)
-            all_tokens = all_tokens + posemb_init
+            current_all_tokens = current_all_tokens + posemb_init
+
 
         if self.config["model"]["memory_mode"] == 'TL' or self.config["model"]["memory_mode"] == 'TL-AddErase':
-            all_tokens=self.tokenLearner1(all_tokens)
+            current_all_tokens=self.tokenLearner1(current_all_tokens)
+
         elif self.config["model"]["memory_mode"] == 'TL-MHA':
-            all_tokens=self.tokenLearnerMHA1(all_tokens)
+            current_all_tokens=self.tokenLearnerMHA1(current_all_tokens)
+
+
+        all_tokens = current_all_tokens
 
         if self.config["model"]["process_unit"] == 'transformer':
             output_tokens = all_tokens
@@ -218,7 +244,7 @@ class TokenTuringMachineUnit(nn.Module):
                 output_tokens = self.mlpBlock(output_tokens)
             output_tokens = self.norm(output_tokens)
 
-        memory_input_tokens = torch.cat((memory_tokens, input_tokens, output_tokens), dim=1)
+        memory_input_tokens = torch.cat((current_memory_block, input_tokens, output_tokens), dim=1)
 
         # Write add posiutional
         if self.config["model"]["Write_use_positional_embedding"]:
@@ -239,11 +265,14 @@ class TokenTuringMachineUnit(nn.Module):
         return (memory_output_tokens,output_tokens)
 
 
+
+
 class TokenTuringMachineEncoder(nn.Module):
     def __init__(self,config) -> None:
         super(TokenTuringMachineEncoder, self).__init__()
         self.memory_tokens = torch.zeros(config["batch_size"], config["model"]["memory_tokens_size"], config["model"]["dim"]).cuda()
         self.tokenTuringMachineUnit = TokenTuringMachineUnit(config)
+        self.smallMemoryToekns = SmallMemoryToekns(config)
         self.cls = nn.Linear(config["model"]["dim"], config["model"]["out_class_num"])
         self.pre = PreProcess(config)
         self.relu = nn.ReLU()
@@ -261,9 +290,13 @@ class TokenTuringMachineEncoder(nn.Module):
             # memory_tokens = torch.exp(random_tokens)
         else:
             memory_tokens = memory_tokens.detach()
+
+        
         for i in range(t):
-            memory_tokens, out = self.tokenTuringMachineUnit(memory_tokens, input[:,i,:,:])
+            current_memory_block = memory_tokens
+            current_memory_block, out = self.tokenTuringMachineUnit(current_memory_block, input[:, i, :, :])
             outs.append(out)
+
     
         outs = torch.stack(outs, dim=1)
         out = outs.view(self.config["batch_size"], -1, self.config["model"]["dim"])
