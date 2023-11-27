@@ -4,16 +4,16 @@ import torch.nn.functional as F
 
 class TokenLearnerModule(nn.Module):
 # The value of dropout_rate is 0. which means that dropout is not used.
-    def __init__(self, in_channels, num_tokens, num_groups, dropout_rate=0.2):
+    def __init__(self, in_channels, summerize_num_tokens, num_groups, dropout_rate=0.2):
 
         super(TokenLearnerModule, self).__init__()
         self.in_channels = in_channels
-        self.num_tokens = num_tokens
+        self.summerize_num_tokens = summerize_num_tokens
         # in_channels and out_channels must both be divisible by groups
         self.num_groups = num_groups
         # num_groups is the number of groups for grouped convolution, 
         # in_channels is the number of input channels,
-        # and num_tokens is the number of tokens.
+        # and summerize_num_tokens is the number of tokens.
 
         # Operates on the last axis (c) of the input data.
         self.norm = nn.LayerNorm(self.in_channels)
@@ -22,7 +22,7 @@ class TokenLearnerModule(nn.Module):
             nn.Conv1d(self.in_channels, self.in_channels, kernel_size=1,
                       stride=1, padding=0, groups=self.num_groups, bias=False),
             nn.GELU(),
-            nn.Conv1d(self.in_channels, self.num_tokens,
+            nn.Conv1d(self.in_channels, self.summerize_num_tokens,
                       kernel_size=1, stride=1, padding=0, bias=False),
         )
         # After conversion to 1D convolution, the shape of the inputs and outputs need to be adjusted accordingly.
@@ -62,23 +62,23 @@ class TokenLearnerModule(nn.Module):
 class TokenLearnerModuleV11(nn.Module):
 
     # The value of dropout_rate is 0. which means that dropout is not used.
-    def __init__(self, in_channels, num_tokens, num_groups, dropout_rate=0.2):
+    def __init__(self, in_channels, summerize_num_tokens, num_groups, dropout_rate=0.2):
 
         super(TokenLearnerModuleV11, self).__init__()
         self.in_channels = in_channels
-        self.num_tokens = num_tokens
+        self.summerize_num_tokens = summerize_num_tokens
         # in_channels and out_channels must both be divisible by groups
         self.num_groups = num_groups
         # num_groups is the number of groups for grouped convolution, 
         # in_channels is the number of input channels,
-        # and num_tokens is the number of tokens.
+        # and summerize_num_tokens is the number of tokens.
 
         # Operates on the last axis (c) of the input data.
         self.norm = nn.LayerNorm(self.in_channels)
 
         self.attention_maps = nn.Sequential(nn.Linear(self.in_channels, self.in_channels),
                                             nn.GELU(),
-                                            nn.Linear(self.in_channels, self.num_tokens))
+                                            nn.Linear(self.in_channels, self.summerize_num_tokens))
         # After conversion to 1D convolution, the shape of the inputs and outputs need to be adjusted accordingly.
         self.feat_conv = nn.Conv1d(
             self.in_channels, self.in_channels, kernel_size=1, stride=1, padding=0, groups=self.num_groups, bias=False)
