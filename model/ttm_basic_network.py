@@ -77,17 +77,17 @@ class TokenAddEraseWrite(nn.Module):
         super(TokenAddEraseWrite, self).__init__()
         self.mlp_block1 = nn.Sequential(nn.LayerNorm(config["model"]["dim"]), 
                                            nn.Linear(config["model"]["dim"], 3*config["model"]["dim"]), 
-                                           nn.Linear(3*config["model"]["dim"], config["model"]["num_tokens"]), 
+                                           nn.Linear(3*config["model"]["dim"], config["model"]["summerize_num_tokens"]), 
                                            nn.GELU())
         self.laynorm = nn.LayerNorm(config["model"]["dim"])
-        self.mlp_block2 = nn.Sequential(nn.Linear(config["model"]["num_tokens"], 3*config["model"]["dim"]), 
-                                           nn.Linear(3*config["model"]["dim"], config["model"]["num_tokens"]), 
+        self.mlp_block2 = nn.Sequential(nn.Linear(config["model"]["summerize_num_tokens"], 3*config["model"]["dim"]), 
+                                           nn.Linear(3*config["model"]["dim"], config["model"]["summerize_num_tokens"]), 
                                            nn.GELU())
         self.mlp_block3 = nn.Sequential(nn.Linear(config["model"]["dim"], 3*config["model"]["dim"]), 
                                             nn.Linear(3*config["model"]["dim"], config["model"]["dim"]), 
                                             nn.GELU())
-        self.mlp_block4 = nn.Sequential(nn.Linear(config["model"]["num_tokens"], 3*config["model"]["dim"]), 
-                                           nn.Linear(3*config["model"]["dim"], config["model"]["num_tokens"]), 
+        self.mlp_block4 = nn.Sequential(nn.Linear(config["model"]["summerize_num_tokens"], 3*config["model"]["dim"]), 
+                                           nn.Linear(3*config["model"]["dim"], config["model"]["summerize_num_tokens"]), 
                                            nn.GELU())
         self.mlp_block5 = nn.Sequential(nn.Linear(config["model"]["dim"], 3*config["model"]["dim"]), 
                                             nn.Linear(3*config["model"]["dim"], config["model"]["dim"]), 
@@ -96,7 +96,7 @@ class TokenAddEraseWrite(nn.Module):
             config["batch_size"], config["model"]["memory_tokens_size"], config["model"]["dim"]).cuda())
         self.trans_outdim = nn.MultiheadAttention(
             embed_dim=config["model"]["dim"], num_heads=8, dropout=0.1, batch_first=True)
-        AddEraseWrite_input = config["model"]["memory_tokens_size"]+config["model"]["num_tokens"]+ int((config["train"]["input_H"]-config["model"]["patch_size"])/config["model"]["patch_size"]+1) * int((config["train"]["input_W"]-config["model"]["patch_size"])/config["model"]["patch_size"]+1)
+        AddEraseWrite_input = config["model"]["memory_tokens_size"]+config["model"]["summerize_num_tokens"]+ int((config["train"]["input_H"]-config["model"]["patch_size"])/config["model"]["patch_size"]+1) * int((config["train"]["input_W"]-config["model"]["patch_size"])/config["model"]["patch_size"]+1)
         self.fn = nn.Linear(AddEraseWrite_input, config["model"]["memory_tokens_size"])
         self.relu = nn.ReLU()
         self.softmax = nn.Softmax(dim = -1)
@@ -144,26 +144,45 @@ class SmallMemoryToekns(nn.Module):
         self.now = 0
 
     def SplitMemoryTokens(self, memory_tokens):
-        num_tokens = memory_tokens.size(1)
+        summerize_num_tokens = memory_tokens.size(1)
         num_blocks = 8
-        block_size = num_tokens // num_blocks
+        block_size = summerize_num_tokens // num_blocks
         self.split_memory_tokens = []
         for i in range(num_blocks):
             start = i * block_size
             end = (i + 1) * block_size
             self.split_memory_tokens.append(memory_tokens[:, start:end, :])
         return self.split_memory_tokens
+
+    def ReadFromBigMem(self, memory_tokens):
+        self.SplitMemoryTokens(memory_tokens)
+        # 遍历每个Memory_tokens块及其相邻的2块
+        k = self.now % 8
+        
+        current_memory_block = self.split_memory_tokens[k]
+        prev_memory_block = self.split_memory_tokens[k - 1] if k > 0 else self.split_memory_tokens[7]
+        next_memory_block = self.split_memory_tokens[k + 1] if k < len(self.split_memory_tokens) - 1 else self.split_memory_tokens[0]
+        
+        self.now = self.now+1
+
+        return current_memory_block, prev_memory_block, next_memory_block   
+    
+    def WriteToBigMem(self, write_memory_block):
+        m = self.now % 8
+        self.split_memory_tokens[m] = write_memory_block
+        memory_tokens = torch.cat(self.split_memory_tokens, dim=1)
+        return memory_tokens
     
 
 class TokenTuringMachineUnit(nn.Module):
     def __init__(self,config) -> None:
         super(TokenTuringMachineUnit, self).__init__()
-        self.tokenLearner1 = TokenLearnerModule(in_channels=config["model"]["dim"], num_tokens=config["model"]["num_tokens"], num_groups=1)
-        self.tokenLearner2 = TokenLearnerModule(in_channels=config["model"]["dim"], num_tokens=24, num_groups=1)
-        self.tokenLearnerV11_1 = TokenLearnerModuleV11(in_channels=config["model"]["dim"], num_tokens=config["model"]["num_tokens"], num_groups=1)
-        self.tokenLearnerV11_2 = TokenLearnerModuleV11(in_channels=config["model"]["dim"], num_tokens=config["model"]["memory_tokens_size"], num_groups=1)
+        self.tokenLearner1 = TokenLearnerModule(in_channels=config["model"]["dim"], summerize_num_tokens=config["model"]["summerize_num_tokens"], num_groups=1)
+        self.tokenLearner2 = TokenLearnerModule(in_channels=config["model"]["dim"], summerize_num_tokens=24, num_groups=1)
+        self.tokenLearnerV11_1 = TokenLearnerModuleV11(in_channels=config["model"]["dim"], summerize_num_tokens=config["model"]["summerize_num_tokens"], num_groups=1)
+        self.tokenLearnerV11_2 = TokenLearnerModuleV11(in_channels=config["model"]["dim"], summerize_num_tokens=config["model"]["memory_tokens_size"], num_groups=1)
         self.transformerBlock = nn.TransformerEncoderLayer(d_model=config["model"]["dim"], nhead=8, dim_feedforward=config["model"]["dim"] * 3, dropout=0.2)
-        self.tokenLearnerMHA1 = TokenLearnerMHA(config["model"]["num_tokens"],config)
+        self.tokenLearnerMHA1 = TokenLearnerMHA(config["model"]["summerize_num_tokens"],config)
         self.tokenLearnerMHA2 = TokenLearnerMHA(config["model"]["memory_tokens_size"],config)
         self.tokenAddEraseWrite = TokenAddEraseWrite(config)
         self.mlpBlock = nn.Sequential(nn.LayerNorm(config["model"]["dim"]),
@@ -175,10 +194,10 @@ class TokenTuringMachineUnit(nn.Module):
                                  nn.Dropout(config["model"]["drop_r"]))
         self.num_layers = 3
         self.norm = nn.LayerNorm(config["model"]["dim"])
-        self.mixer_sequence_block = nn.Sequential(nn.Linear(config["model"]["num_tokens"], config["model"]["num_tokens"] * 6),
+        self.mixer_sequence_block = nn.Sequential(nn.Linear(config["model"]["summerize_num_tokens"], config["model"]["summerize_num_tokens"] * 6),
                                                   nn.GELU(),
                                                   nn.Dropout(config["model"]["drop_r"]),
-                                                  nn.Linear(config["model"]["num_tokens"] * 6, config["model"]["num_tokens"]),
+                                                  nn.Linear(config["model"]["summerize_num_tokens"] * 6, config["model"]["summerize_num_tokens"]),
                                                   nn.GELU())
         self.mixer_channels__block = nn.Sequential(nn.Linear(config["model"]["dim"], config["model"]["dim"] * 3),
                                                    nn.GELU(),
@@ -197,21 +216,25 @@ class TokenTuringMachineUnit(nn.Module):
         # Read add posiutional
         if self.config["model"]["Read_use_positional_embedding"]:
             current_all_tokens = current_all_tokens.cuda()
-
+            prev_all_tokens = prev_all_tokens.cuda()
+            next_all_tokens = next_all_tokens.cuda()
             posemb_init = torch.nn.Parameter(torch.empty(
                 1, current_all_tokens.size(1), current_all_tokens.size(2))).cuda()
             init.normal_(posemb_init, std=0.02)
             current_all_tokens = current_all_tokens + posemb_init
-
+            prev_all_tokens = prev_all_tokens + posemb_init
+            next_all_tokens = next_all_tokens + posemb_init
 
         if self.config["model"]["memory_mode"] == 'TL' or self.config["model"]["memory_mode"] == 'TL-AddErase':
             current_all_tokens=self.tokenLearner1(current_all_tokens)
-
+            prev_all_tokens=self.tokenLearner1(prev_all_tokens)
+            next_all_tokens=self.tokenLearner1(next_all_tokens)
         elif self.config["model"]["memory_mode"] == 'TL-MHA':
             current_all_tokens=self.tokenLearnerMHA1(current_all_tokens)
+            prev_all_tokens=self.tokenLearnerMHA1(prev_all_tokens)
+            next_all_tokens=self.tokenLearnerMHA1(next_all_tokens)
 
-
-        all_tokens = current_all_tokens
+        all_tokens = torch.cat((current_all_tokens, prev_all_tokens, next_all_tokens), dim=1)
 
         if self.config["model"]["process_unit"] == 'transformer':
             output_tokens = all_tokens
@@ -244,7 +267,7 @@ class TokenTuringMachineUnit(nn.Module):
                 output_tokens = self.mlpBlock(output_tokens)
             output_tokens = self.norm(output_tokens)
 
-        memory_input_tokens = torch.cat((current_memory_block, input_tokens, output_tokens), dim=1)
+        memory_input_tokens = torch.cat((current_memory_block, prev_memory_block, next_memory_block, input_tokens, output_tokens), dim=1)
 
         # Write add posiutional
         if self.config["model"]["Write_use_positional_embedding"]:
@@ -293,8 +316,11 @@ class TokenTuringMachineEncoder(nn.Module):
 
         
         for i in range(t):
-            current_memory_block = memory_tokens
-            current_memory_block, out = self.tokenTuringMachineUnit(current_memory_block, input[:, i, :, :])
+            # 将Memory_tokens分成8块
+            current_memory_block, prev_memory_block, next_memory_block = self.smallMemoryToekns.ReadFromBigMem(memory_tokens)
+            # 遍历每个Memory_tokens块及其相邻的2块
+            write_memory_block, out = self.tokenTuringMachineUnit(current_memory_block, prev_memory_block, next_memory_block, input[:, i, :, :])
+            memory_tokens = self.smallMemoryToekns.WriteToBigMem(write_memory_block)
             outs.append(out)
 
     

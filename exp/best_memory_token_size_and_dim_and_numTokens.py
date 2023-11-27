@@ -48,7 +48,7 @@ train_config = {
            64, 64, 64, 64, 64,
            32, 32, 32, 32, 32, 
            64, 64, 64, 64, 64],
-    "num_tokens":[8, 8, 8, 8, 8,
+    "summerize_num_tokens":[8, 8, 8, 8, 8,
                   8, 8, 8, 8, 8,
                   16, 16, 16, 16, 16,
                   16, 16, 16, 16, 16]
@@ -62,7 +62,7 @@ if __name__ == "__main__":
             data['train']['name'] = train_config["name"][i]
             data['model']['memory_tokens_size'] = train_config["memory_tokens_size"][i]
             data['model']['dim'] = train_config["dim"][i]
-            data['model']['num_tokens'] = train_config["num_tokens"][i]
+            data['model']['summerize_num_tokens'] = train_config["summerize_num_tokens"][i]
 
             with open(f'./config/{exp_json}', 'w') as file:
                 json.dump(data, file, indent=4)

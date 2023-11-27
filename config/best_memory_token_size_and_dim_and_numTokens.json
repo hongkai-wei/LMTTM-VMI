@@ -3,7 +3,7 @@
     "model": {
         "dim": 32,
         "memory_tokens_size": 16,
-        "num_tokens": 16
+        "summerize_num_tokens": 16
     },
     "train": {
         "name": "exp1_memory16_and_dim32_and_numTokens16"
