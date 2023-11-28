@@ -66,7 +66,7 @@ class TokenLearnerMHA(nn.Module):
     def __init__(self, output_tokens,config) -> None:
         super(TokenLearnerMHA, self).__init__()
         self.query = nn.Parameter(torch.randn(config["batch_size"], output_tokens, config["model"]["dim"]).cuda())
-        self.attn = nn.MultiheadAttention(embed_dim=config["model"]["dim"], num_heads=8, dropout=0.1, batch_first=True)
+        self.attn = nn.MultiheadAttention(embed_dim=config["model"]["dim"], num_heads=8, dropout=config["model"]["drop_r"], batch_first=True)
 
     def forward(self, input):
         # [0]is output，[1]is weight
@@ -95,7 +95,7 @@ class TokenAddEraseWrite(nn.Module):
         self.query = nn.Parameter(torch.randn(
             config["batch_size"], config["model"]["memory_tokens_size"], config["model"]["dim"]).cuda())
         self.trans_outdim = nn.MultiheadAttention(
-            embed_dim=config["model"]["dim"], num_heads=8, dropout=0.1, batch_first=True)
+            embed_dim=config["model"]["dim"], num_heads=8, dropout=config["model"]["drop_r"], batch_first=True)
         AddEraseWrite_input = config["model"]["memory_tokens_size"]+config["model"]["summerize_num_tokens"]+ int((config["train"]["input_H"]-config["model"]["patch_size"])/config["model"]["patch_size"]+1) * int((config["train"]["input_W"]-config["model"]["patch_size"])/config["model"]["patch_size"]+1)
         self.fn = nn.Linear(AddEraseWrite_input, config["model"]["memory_tokens_size"])
         self.relu = nn.ReLU()
@@ -138,37 +138,37 @@ class TokenAddEraseWrite(nn.Module):
 
         return output
 
-class SmallMemoryToekns(nn.Module):
+class SimpleDNC(nn.Module):
     def __init__(self,config) -> None:
-        super(SmallMemoryToekns, self).__init__()
-        self.now = 0
+        super(SimpleDNC, self).__init__()
+        self.current_flag = 0
+        self.num_blocks = config['model']['num_blocks']
 
     def SplitMemoryTokens(self, memory_tokens):
         summerize_num_tokens = memory_tokens.size(1)
-        num_blocks = 8
-        block_size = summerize_num_tokens // num_blocks
+        block_size = summerize_num_tokens // self.num_blocks
         self.split_memory_tokens = []
-        for i in range(num_blocks):
+        for i in range(self.num_blocks):
             start = i * block_size
             end = (i + 1) * block_size
             self.split_memory_tokens.append(memory_tokens[:, start:end, :])
         return self.split_memory_tokens
 
-    def ReadFromBigMem(self, memory_tokens):
+    def ReadFromDNC(self, memory_tokens):
         self.SplitMemoryTokens(memory_tokens)
         # 遍历每个Memory_tokens块及其相邻的2块
-        k = self.now % 8
+        k = self.current_flag % self.num_blocks
         
         current_memory_block = self.split_memory_tokens[k]
         prev_memory_block = self.split_memory_tokens[k - 1] if k > 0 else self.split_memory_tokens[7]
         next_memory_block = self.split_memory_tokens[k + 1] if k < len(self.split_memory_tokens) - 1 else self.split_memory_tokens[0]
         
-        self.now = self.now+1
+        self.current_flag = self.current_flag+1
 
         return current_memory_block, prev_memory_block, next_memory_block   
     
-    def WriteToBigMem(self, write_memory_block):
-        m = self.now % 8
+    def WriteToDNC(self, write_memory_block):
+        m = self.current_flag % self.num_blocks
         self.split_memory_tokens[m] = write_memory_block
         memory_tokens = torch.cat(self.split_memory_tokens, dim=1)
         return memory_tokens
@@ -177,10 +177,10 @@ class SmallMemoryToekns(nn.Module):
 class TokenTuringMachineUnit(nn.Module):
     def __init__(self,config) -> None:
         super(TokenTuringMachineUnit, self).__init__()
-        self.tokenLearner1 = TokenLearnerModule(in_channels=config["model"]["dim"], summerize_num_tokens=config["model"]["summerize_num_tokens"], num_groups=1)
-        self.tokenLearner2 = TokenLearnerModule(in_channels=config["model"]["dim"], summerize_num_tokens=24, num_groups=1)
-        self.tokenLearnerV11_1 = TokenLearnerModuleV11(in_channels=config["model"]["dim"], summerize_num_tokens=config["model"]["summerize_num_tokens"], num_groups=1)
-        self.tokenLearnerV11_2 = TokenLearnerModuleV11(in_channels=config["model"]["dim"], summerize_num_tokens=config["model"]["memory_tokens_size"], num_groups=1)
+        self.tokenLearner1 = TokenLearnerModule(in_channels=config["model"]["dim"], summerize_num_tokens=config["model"]["summerize_num_tokens"], num_groups=1, dropout_rate=config["model"]["drop_r"])
+        self.tokenLearner2 = TokenLearnerModule(in_channels=config["model"]["dim"], summerize_num_tokens=24, num_groups=1, dropout_rate=config["model"]["drop_r"])
+        self.tokenLearnerV11_1 = TokenLearnerModuleV11(in_channels=config["model"]["dim"], summerize_num_tokens=config["model"]["summerize_num_tokens"], num_groups=1, dropout_rate=config["model"]["drop_r"])
+        self.tokenLearnerV11_2 = TokenLearnerModuleV11(in_channels=config["model"]["dim"], summerize_num_tokens=config["model"]["memory_tokens_size"], num_groups=1, dropout_rate=config["model"]["drop_r"])
         self.transformerBlock = nn.TransformerEncoderLayer(d_model=config["model"]["dim"], nhead=8, dim_feedforward=config["model"]["dim"] * 3, dropout=0.2)
         self.tokenLearnerMHA1 = TokenLearnerMHA(config["model"]["summerize_num_tokens"],config)
         self.tokenLearnerMHA2 = TokenLearnerMHA(config["model"]["memory_tokens_size"],config)
@@ -295,7 +295,7 @@ class TokenTuringMachineEncoder(nn.Module):
         super(TokenTuringMachineEncoder, self).__init__()
         self.memory_tokens = torch.zeros(config["batch_size"], config["model"]["memory_tokens_size"], config["model"]["dim"]).cuda()
         self.tokenTuringMachineUnit = TokenTuringMachineUnit(config)
-        self.smallMemoryToekns = SmallMemoryToekns(config)
+        self.simpleDNC = SimpleDNC(config)
         self.cls = nn.Linear(config["model"]["dim"], config["model"]["out_class_num"])
         self.pre = PreProcess(config)
         self.relu = nn.ReLU()
@@ -317,19 +317,17 @@ class TokenTuringMachineEncoder(nn.Module):
         
         for i in range(t):
             # 将Memory_tokens分成8块
-            current_memory_block, prev_memory_block, next_memory_block = self.smallMemoryToekns.ReadFromBigMem(memory_tokens)
+            current_memory_block, prev_memory_block, next_memory_block = self.simpleDNC.ReadFromDNC(memory_tokens)
             # 遍历每个Memory_tokens块及其相邻的2块
             write_memory_block, out = self.tokenTuringMachineUnit(current_memory_block, prev_memory_block, next_memory_block, input[:, i, :, :])
-            memory_tokens = self.smallMemoryToekns.WriteToBigMem(write_memory_block)
+            memory_tokens = self.simpleDNC.WriteToDNC(write_memory_block)
             outs.append(out)
-
     
         outs = torch.stack(outs, dim=1)
         out = outs.view(self.config["batch_size"], -1, self.config["model"]["dim"])
         out = out.transpose(1, 2)
         out = nn.AdaptiveAvgPool1d(1)(out) 
         out = out.squeeze(2)
-
 
         if self.config["model"]["load_memory_add_noise"]:
             np.random.seed(42)
@@ -353,8 +351,6 @@ class TokenTuringMachineEncoder(nn.Module):
                 noise = noise.cuda()
                 noise_rate = 0.3
                 memory_tokens = memory_tokens + noise*noise_rate
-                # 在训练循环之外生成噪声张量
-
             elif self.config["model"]["load_memory_add_noise_mode"] == "gamma":
                 shape = torch.tensor([2.0])  # Shape parameters of the Gamma distribution
                 scale = torch.tensor([2.0])  # Scale parameters of the Gamma distribution

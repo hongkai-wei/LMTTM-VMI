@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 class TokenLearnerModule(nn.Module):
 # The value of dropout_rate is 0. which means that dropout is not used.
-    def __init__(self, in_channels, summerize_num_tokens, num_groups, dropout_rate=0.2):
+    def __init__(self, in_channels, summerize_num_tokens, num_groups, dropout_rate):
 
         super(TokenLearnerModule, self).__init__()
         self.in_channels = in_channels
@@ -62,7 +62,7 @@ class TokenLearnerModule(nn.Module):
 class TokenLearnerModuleV11(nn.Module):
 
     # The value of dropout_rate is 0. which means that dropout is not used.
-    def __init__(self, in_channels, summerize_num_tokens, num_groups, dropout_rate=0.2):
+    def __init__(self, in_channels, summerize_num_tokens, num_groups, dropout_rate):
 
         super(TokenLearnerModuleV11, self).__init__()
         self.in_channels = in_channels

@@ -15,6 +15,7 @@
         "in_channels": 1,
         "dim": 192,
         "memory_tokens_size": 192,
+        "num_blocks": 8,
         "summerize_num_tokens": 8,
         "step": 28,
         "all_steps": "18, 28",
@@ -28,7 +29,7 @@
         "variant": "variant0"
     },
     "train": {
-        "name": "exp6696",
+        "name": "exp8-24-192",
         "epoch": 300,
         "optimizer": "Adam",
         "lr": 0.0001,

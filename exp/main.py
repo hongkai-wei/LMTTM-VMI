@@ -17,7 +17,7 @@ def run_exp(exp_json):
     # os.system("python exp\\tesorboard2excel.py " + exp_json)
 
 train_config = {
-    "name": ["exp6696"],
+    "name": ["exp8-24-192"],
 
     "variant":["variant0"]
 }
