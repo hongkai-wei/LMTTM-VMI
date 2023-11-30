@@ -7,8 +7,7 @@ We design a neutral turing machine with detachable memory. The memory is detacha
 
 | Task | Description | Status | Start Date | End Date |
 | :---: | :---: | :---: | :---: | :---: |
-| 3 | Incorporating DNC concept into TTM to complete a simplified version of TDNC | In progress | 2023-11-23 | - |
-| 2 | Implement the NTM-DM | In progress | 2023-10-19 | - |
+| 2 | Linked Memory Token Turing Machine | In progress | 2023-11-29 | - |
 | 1 | Find the best parameters of ttm | Completed | 2023-09-20 | 2023-11-23 |
 
 
