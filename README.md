@@ -21,13 +21,13 @@ We design a neutral turing machine with detachable memory. The memory is detacha
 | 1 | Medmnist-organmnist3d | - |
 
 ## How to run
-
+- run exp/main.py
 ## Results
 
 ## References
-
-- TTM
 - NTM
-
+- TokenLearner
+- TTM
+- DNC
 
 ## Acknowledgements
