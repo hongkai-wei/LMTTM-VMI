@@ -10,7 +10,8 @@ import torch
 import tqdm
 from utils.video_transforms import *
 import torch.nn as nn 
-json_path = sys.argv[1]
+# json_path = sys.argv[1]
+json_path = "base_medmnist.json"
 config = Config.getInstance(json_path)
 
 log_writer = logger(config['train']["name"] + "_train")()

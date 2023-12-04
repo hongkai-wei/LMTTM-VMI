@@ -12,8 +12,8 @@ import torch.nn as nn
 import os
 from torch.utils.data import Dataset,DataLoader
 import sys
-json_path = sys.argv[1]
-# json_path = "best_memory_token_size_and_dim_and_numTokens.json"
+# json_path = sys.argv[1]
+json_path = "base_hmdb.json"
 config = Config.getInstance(json_path)
 # path=r"base_ucf.json"
 
@@ -130,7 +130,7 @@ def train():
             # Save the model for the next 50 epochs
 
         if _ >= (config['train']["epoch"]-50):
-            save_name = f"./check_point/{config['train']['name']}/{config['train']['name']}_epoch_{_ -config['train']['epoch'] + 6}.pth"
+            save_name = f"./check_point/{config['train']['name']}/{config['train']['name']}_epoch_{_ -config['train']['epoch'] + 51}.pth"
             torch.save({"model": model.state_dict(), "memory_tokens": memory_tokens}, save_name)
 
 
