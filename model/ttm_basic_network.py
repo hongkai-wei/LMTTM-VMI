@@ -3,7 +3,7 @@ import torch.nn as nn
 from einops import rearrange, reduce, repeat
 from einops.layers.torch import Rearrange
 import torch.nn.init as init
-from .tokenLearner_network import TokenLearnerModule, TokenLearnerModuleV11
+from .tokenLearner_network import TokenLearnerModule, TokenLearnerModuleV11, TokenLearnerModuleVMem
 from config.configure import Config
 import numpy as np
 import torchvision.models as models
@@ -29,16 +29,6 @@ class PreProcess(nn.Module):
         return x
     
 class PreProcessV2(nn.Module):
-    def __init__(self, config,patch_t=3, patch_h=3, patch_w=3) -> None:
-        super(PreProcessV2, self).__init__()
-        self.lay = nn.Sequential(Rearrange('b c (t pt) (h ph) (w pw) -> b t (h w) (pt ph pw c)', 
-                                            pt=patch_t, ph=patch_h, pw=patch_w),
-                                  nn.Linear(patch_h*patch_t*patch_w*config["model"]["in_channels"], config["model"]["dim"]), )
-
-    def forward(self, x):
-        x = self.lay(x)
-        return x
-
 
     def __init__(self):
         super(PreProcessV2, self).__init__()
@@ -55,13 +45,13 @@ class PreProcessV2(nn.Module):
         x = self.resnet.maxpool(x)
 
         x = self.resnet.layer1(x)
-        x = self.resnet.layer2(x)#128
+        x = self.resnet.layer2(x) #128
         x = self.resnet.layer3(x) #256
-        x = self.resnet.layer4(x)#512
-        he,dim,h,w=x.shape
-        x=x.view(batch_size,steps,-1,dim)
+        x = self.resnet.layer4(x) #512
+        he, dim, h, w = x.shape
+        x = x.view(batch_size, steps, -1, dim)
         return x
-
+    
 class TokenLearnerMHA(nn.Module):
     def __init__(self, output_tokens,config) -> None:
         super(TokenLearnerMHA, self).__init__()
@@ -138,9 +128,9 @@ class TokenAddEraseWrite(nn.Module):
 
         return output
 
-class SimpleDNC(nn.Module):
+class LinkedMemoryTTM(nn.Module):
     def __init__(self,config) -> None:
-        super(SimpleDNC, self).__init__()
+        super(LinkedMemoryTTM, self).__init__()
         self.current_flag = 0
         self.num_blocks = config['model']['num_blocks']
 
@@ -178,10 +168,11 @@ class TokenTuringMachineUnit(nn.Module):
     def __init__(self,config) -> None:
         super(TokenTuringMachineUnit, self).__init__()
         self.tokenLearner1 = TokenLearnerModule(in_channels=config["model"]["dim"], summerize_num_tokens=config["model"]["summerize_num_tokens"], num_groups=1, dropout_rate=config["model"]["drop_r"])
-        self.tokenLearner2 = TokenLearnerModule(in_channels=config["model"]["dim"], summerize_num_tokens=24, num_groups=1, dropout_rate=config["model"]["drop_r"])
+        self.tokenLearner2 = TokenLearnerModule(in_channels=config["model"]["dim"], summerize_num_tokens=config["model"]["memory_tokens_size"]//config["model"]["num_blocks"], num_groups=1, dropout_rate=config["model"]["drop_r"])
         self.tokenLearnerV11_1 = TokenLearnerModuleV11(in_channels=config["model"]["dim"], summerize_num_tokens=config["model"]["summerize_num_tokens"], num_groups=1, dropout_rate=config["model"]["drop_r"])
         self.tokenLearnerV11_2 = TokenLearnerModuleV11(in_channels=config["model"]["dim"], summerize_num_tokens=config["model"]["memory_tokens_size"], num_groups=1, dropout_rate=config["model"]["drop_r"])
-        self.transformerBlock = nn.TransformerEncoderLayer(d_model=config["model"]["dim"], nhead=8, dim_feedforward=config["model"]["dim"] * 3, dropout=0.2)
+        self.TokenLearnerModuleVMem = TokenLearnerModuleVMem(in_tokens=config["model"]["memory_tokens_size"]//config["model"]["num_blocks"], summerize_num_tokens=config["model"]["summerize_num_tokens"], num_groups=1, dropout_rate=config["model"]["drop_r"])
+        self.transformerBlock = nn.TransformerEncoderLayer(d_model=config["model"]["dim"], nhead=8, dim_feedforward=config["model"]["dim"] * 3, dropout=config["model"]["drop_r"])
         self.tokenLearnerMHA1 = TokenLearnerMHA(config["model"]["summerize_num_tokens"],config)
         self.tokenLearnerMHA2 = TokenLearnerMHA(config["model"]["memory_tokens_size"],config)
         self.tokenAddEraseWrite = TokenAddEraseWrite(config)
@@ -210,8 +201,10 @@ class TokenTuringMachineUnit(nn.Module):
     def forward(self, current_memory_block, prev_memory_block, next_memory_block, input_tokens):
 
         current_all_tokens = torch.cat((current_memory_block, input_tokens), dim=1)
-        prev_all_tokens = torch.cat((prev_memory_block, input_tokens), dim=1)
-        next_all_tokens = torch.cat((next_memory_block, input_tokens), dim=1)
+        # prev_all_tokens = torch.cat((prev_memory_block, input_tokens), dim=1)
+        # next_all_tokens = torch.cat((next_memory_block, input_tokens), dim=1)
+        prev_all_tokens = prev_memory_block
+        next_all_tokens = next_memory_block
 
         # Read add posiutional
         if self.config["model"]["Read_use_positional_embedding"]:
@@ -227,8 +220,8 @@ class TokenTuringMachineUnit(nn.Module):
 
         if self.config["model"]["memory_mode"] == 'TL' or self.config["model"]["memory_mode"] == 'TL-AddErase':
             current_all_tokens=self.tokenLearner1(current_all_tokens)
-            prev_all_tokens=self.tokenLearner1(prev_all_tokens)
-            next_all_tokens=self.tokenLearner1(next_all_tokens)
+            prev_all_tokens=self.TokenLearnerModuleVMem(prev_all_tokens)
+            next_all_tokens=self.TokenLearnerModuleVMem(next_all_tokens)
         elif self.config["model"]["memory_mode"] == 'TL-MHA':
             current_all_tokens=self.tokenLearnerMHA1(current_all_tokens)
             prev_all_tokens=self.tokenLearnerMHA1(prev_all_tokens)
@@ -295,15 +288,20 @@ class TokenTuringMachineEncoder(nn.Module):
         super(TokenTuringMachineEncoder, self).__init__()
         self.memory_tokens = torch.zeros(config["batch_size"], config["model"]["memory_tokens_size"], config["model"]["dim"]).cuda()
         self.tokenTuringMachineUnit = TokenTuringMachineUnit(config)
-        self.simpleDNC = SimpleDNC(config)
+        self.simpleDNC = LinkedMemoryTTM(config)
         self.cls = nn.Linear(config["model"]["dim"], config["model"]["out_class_num"])
-        self.pre = PreProcess(config)
+        self.pre1 = PreProcess(config)
+        self.pre2 = PreProcessV2()
         self.relu = nn.ReLU()
         self.pre_dim =nn.Linear(512, config["model"]["dim"])
         self.config = config
 
     def forward(self, input, memory_tokens):
-        input = self.pre(input)
+        if self.config["model"]["preprocess_mode"] == "3d":
+            input = self.pre1(input)
+        elif self.config["model"]["preprocess_mode"] == "resnet18":
+            input = self.pre2(input)
+            input = self.pre_dim(input)
         b, t, _, c = input.shape
         outs=[]
         if memory_tokens == None:
@@ -313,11 +311,11 @@ class TokenTuringMachineEncoder(nn.Module):
             # memory_tokens = torch.exp(random_tokens)
         else:
             memory_tokens = memory_tokens.detach()
-
         
         for i in range(t):
-            # 将Memory_tokens分成8块
+            # 将Memory_tokens分成多块
             current_memory_block, prev_memory_block, next_memory_block = self.simpleDNC.ReadFromDNC(memory_tokens)
+
             # 遍历每个Memory_tokens块及其相邻的2块
             write_memory_block, out = self.tokenTuringMachineUnit(current_memory_block, prev_memory_block, next_memory_block, input[:, i, :, :])
             memory_tokens = self.simpleDNC.WriteToDNC(write_memory_block)

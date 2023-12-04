@@ -12,7 +12,7 @@ import torch
 import tqdm
 import os
 from utils.video_transforms import *
-# json_path = "best_memory_token_size_and_dim_and_numTokens.json"
+# json_path = "base.json"
 json_path = sys.argv[1]
 config = Config.getInstance(json_path)
 transform_test = Compose([
