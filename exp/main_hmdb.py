@@ -17,11 +17,11 @@ def run_exp(exp_json):
     # os.system("python exp\\tesorboard2excel.py " + exp_json)
 
 train_config = {
-    "name": ["ex06_256_numb16_hmdb", "ex07_512_numb16_hmdb", "ex03_512_numb64_hmdb", "ex04_1024_numb128_hmdb", "ex05_2048_numb256_hmdb"],
+    "name": ["ex07_512_numb16_hmdb", "ex03_512_numb64_hmdb", "ex04_1024_numb128_hmdb", "ex05_2048_numb256_hmdb"],
 
-    "memory_tokens_size":[256, 512, 512, 1024, 2048],
+    "memory_tokens_size":[512, 512, 1024, 2048],
 
-    "num_blocks":[16, 16, 64, 128, 256]
+    "num_blocks":[16, 64, 128, 256]
 }
 
 if __name__ == "__main__":
