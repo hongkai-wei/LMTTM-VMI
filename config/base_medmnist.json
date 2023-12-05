@@ -8,7 +8,7 @@
     "checkpoint_dir": "./checkpoints",
     "model": {
         "drop_r": 0.2,
-        "preprocess_mode": "3d",
+        "preprocess_mode": "resnet18",
         "all_preprocess_mode": "3d, resnet18",
         "process_unit": "transformer",
         "all_process_unit": "transformer, mixer,transformer",
@@ -24,7 +24,7 @@
         "out_class_num": 11,
         "patch_size": 3,
         "Read_use_positional_embedding": false,
-        "Write_use_positional_embedding": true,
+        "Write_use_positional_embedding": false,
         "load_memory_add_noise": true,
         "load_memory_add_noise_mode": "exp",
         "all_load_memory_add_noise_mode": "None, uniform, laplace, normal, exp, gamma, poisson",

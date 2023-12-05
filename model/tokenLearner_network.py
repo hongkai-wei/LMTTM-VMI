@@ -111,7 +111,7 @@ class TokenLearnerModuleV11(nn.Module):
 
 class TokenLearnerModuleVMem(nn.Module):
 # The value of dropout_rate is 0. which means that dropout is not used.
-    def __init__(self, in_tokens, summerize_num_tokens, num_groups, dropout_rate):
+    def __init__(self, in_tokens, summerize_num_tokens, num_groups, dropout_rate, dim):
 
         super(TokenLearnerModuleVMem, self).__init__()
         self.in_tokens = in_tokens
@@ -135,7 +135,7 @@ class TokenLearnerModuleVMem(nn.Module):
         # After conversion to 1D convolution, the shape of the inputs and outputs need to be adjusted accordingly.
 
         self.feat_conv = nn.Conv1d(
-            self.in_tokens, 128, kernel_size=1, stride=1, padding=0, groups=self.num_groups, bias=False)
+            self.in_tokens, dim, kernel_size=1, stride=1, padding=0, groups=self.num_groups, bias=False)
         self.gelu = nn.GELU()
         self.dropout = nn.Dropout(dropout_rate)
 

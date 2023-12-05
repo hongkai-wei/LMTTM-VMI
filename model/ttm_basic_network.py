@@ -67,19 +67,24 @@ class TokenAddEraseWrite(nn.Module):
         super(TokenAddEraseWrite, self).__init__()
         self.mlp_block1 = nn.Sequential(nn.LayerNorm(config["model"]["dim"]), 
                                            nn.Linear(config["model"]["dim"], 3*config["model"]["dim"]), 
+                                           nn.GELU(),
                                            nn.Linear(3*config["model"]["dim"], config["model"]["summerize_num_tokens"]), 
                                            nn.GELU())
         self.laynorm = nn.LayerNorm(config["model"]["dim"])
-        self.mlp_block2 = nn.Sequential(nn.Linear(config["model"]["summerize_num_tokens"], 3*config["model"]["dim"]), 
+        self.mlp_block2 = nn.Sequential(nn.Linear(config["model"]["summerize_num_tokens"], 3*config["model"]["dim"]),
+                                        nn.GELU(), 
                                            nn.Linear(3*config["model"]["dim"], config["model"]["summerize_num_tokens"]), 
                                            nn.GELU())
         self.mlp_block3 = nn.Sequential(nn.Linear(config["model"]["dim"], 3*config["model"]["dim"]), 
+                                        nn.GELU(),
                                             nn.Linear(3*config["model"]["dim"], config["model"]["dim"]), 
                                             nn.GELU())
         self.mlp_block4 = nn.Sequential(nn.Linear(config["model"]["summerize_num_tokens"], 3*config["model"]["dim"]), 
+                                        nn.GELU(),
                                            nn.Linear(3*config["model"]["dim"], config["model"]["summerize_num_tokens"]), 
                                            nn.GELU())
         self.mlp_block5 = nn.Sequential(nn.Linear(config["model"]["dim"], 3*config["model"]["dim"]), 
+                                        nn.GELU(),
                                             nn.Linear(3*config["model"]["dim"], config["model"]["dim"]), 
                                             nn.GELU())
         self.query = nn.Parameter(torch.randn(
@@ -171,7 +176,7 @@ class TokenTuringMachineUnit(nn.Module):
         self.tokenLearner2 = TokenLearnerModule(in_channels=config["model"]["dim"], summerize_num_tokens=config["model"]["memory_tokens_size"]//config["model"]["num_blocks"], num_groups=1, dropout_rate=config["model"]["drop_r"])
         self.tokenLearnerV11_1 = TokenLearnerModuleV11(in_channels=config["model"]["dim"], summerize_num_tokens=config["model"]["summerize_num_tokens"], num_groups=1, dropout_rate=config["model"]["drop_r"])
         self.tokenLearnerV11_2 = TokenLearnerModuleV11(in_channels=config["model"]["dim"], summerize_num_tokens=config["model"]["memory_tokens_size"], num_groups=1, dropout_rate=config["model"]["drop_r"])
-        self.TokenLearnerModuleVMem = TokenLearnerModuleVMem(in_tokens=config["model"]["memory_tokens_size"]//config["model"]["num_blocks"], summerize_num_tokens=config["model"]["summerize_num_tokens"], num_groups=1, dropout_rate=config["model"]["drop_r"])
+        self.TokenLearnerModuleVMem = TokenLearnerModuleVMem(in_tokens=config["model"]["memory_tokens_size"]//config["model"]["num_blocks"]+9, summerize_num_tokens=config["model"]["summerize_num_tokens"], num_groups=1, dropout_rate=config["model"]["drop_r"], dim = config["model"]["dim"])
         self.transformerBlock = nn.TransformerEncoderLayer(d_model=config["model"]["dim"], nhead=8, dim_feedforward=config["model"]["dim"] * 3, dropout=config["model"]["drop_r"])
         self.tokenLearnerMHA1 = TokenLearnerMHA(config["model"]["summerize_num_tokens"],config)
         self.tokenLearnerMHA2 = TokenLearnerMHA(config["model"]["memory_tokens_size"],config)
@@ -201,10 +206,10 @@ class TokenTuringMachineUnit(nn.Module):
     def forward(self, current_memory_block, prev_memory_block, next_memory_block, input_tokens):
 
         current_all_tokens = torch.cat((current_memory_block, input_tokens), dim=1)
-        # prev_all_tokens = torch.cat((prev_memory_block, input_tokens), dim=1)
-        # next_all_tokens = torch.cat((next_memory_block, input_tokens), dim=1)
-        prev_all_tokens = prev_memory_block
-        next_all_tokens = next_memory_block
+        prev_all_tokens = torch.cat((prev_memory_block, input_tokens), dim=1)
+        next_all_tokens = torch.cat((next_memory_block, input_tokens), dim=1)
+        # prev_all_tokens = prev_memory_block
+        # next_all_tokens = next_memory_block
 
         # Read add posiutional
         if self.config["model"]["Read_use_positional_embedding"]:
@@ -219,13 +224,13 @@ class TokenTuringMachineUnit(nn.Module):
             next_all_tokens = next_all_tokens + posemb_init
 
         if self.config["model"]["memory_mode"] == 'TL' or self.config["model"]["memory_mode"] == 'TL-AddErase':
-            current_all_tokens=self.tokenLearner1(current_all_tokens)
-            prev_all_tokens=self.TokenLearnerModuleVMem(prev_all_tokens)
-            next_all_tokens=self.TokenLearnerModuleVMem(next_all_tokens)
+            current_all_tokens = self.tokenLearner1(current_all_tokens)
+            prev_all_tokens = self.TokenLearnerModuleVMem(prev_all_tokens)
+            next_all_tokens = self.TokenLearnerModuleVMem(next_all_tokens)
         elif self.config["model"]["memory_mode"] == 'TL-MHA':
-            current_all_tokens=self.tokenLearnerMHA1(current_all_tokens)
-            prev_all_tokens=self.tokenLearnerMHA1(prev_all_tokens)
-            next_all_tokens=self.tokenLearnerMHA1(next_all_tokens)
+            current_all_tokens = self.tokenLearnerMHA1(current_all_tokens)
+            prev_all_tokens = self.tokenLearnerMHA1(prev_all_tokens)
+            next_all_tokens = self.tokenLearnerMHA1(next_all_tokens)
 
         all_tokens = torch.cat((current_all_tokens, prev_all_tokens, next_all_tokens), dim=1)
 
@@ -332,22 +337,22 @@ class TokenTuringMachineEncoder(nn.Module):
             if self.config["model"]["load_memory_add_noise_mode"] == "normal":
                 noise = torch.randn_like(memory_tokens)
                 noise = noise.cuda()
-                noise_rate = 0.3
+                noise_rate = 0.2
                 memory_tokens = memory_tokens + noise_rate * noise
             elif self.config["model"]["load_memory_add_noise_mode"] == "laplace":
                 noise = torch.distributions.laplace.Laplace(loc = 10, scale = 10).sample(memory_tokens.size())
                 noise = noise.cuda()
-                noise_rate = 0.3
+                noise_rate = 0.2
                 memory_tokens = memory_tokens + noise*noise_rate
             elif self.config["model"]["load_memory_add_noise_mode"] == "uniform":
                 noise = torch.FloatTensor(memory_tokens.size()).uniform_(-0.5, 0.5)
                 noise = noise.cuda()
-                noise_rate = 0.3
+                noise_rate = 0.2
                 memory_tokens = memory_tokens + noise*noise_rate
             elif self.config["model"]["load_memory_add_noise_mode"] == "exp":
                 noise = torch.empty(memory_tokens.size()).exponential_()
                 noise = noise.cuda()
-                noise_rate = 0.3
+                noise_rate = 0.2
                 memory_tokens = memory_tokens + noise*noise_rate
             elif self.config["model"]["load_memory_add_noise_mode"] == "gamma":
                 shape = torch.tensor([2.0])  # Shape parameters of the Gamma distribution
@@ -355,14 +360,14 @@ class TokenTuringMachineEncoder(nn.Module):
                 noise = torch.empty(memory_tokens.size())  # Create the same empty tensor as the noise tensor
                 noise = noise.cuda()
                 noise.copy_(torch.from_numpy(np.random.gamma(shape.item(), scale.item(), size=noise.size())))  # 将正态分布随机数转化为Gamma分布随机数
-                noise_rate = 0.3
+                noise_rate = 0.2
                 memory_tokens = memory_tokens + noise*noise_rate
             elif self.config["model"]["load_memory_add_noise_mode"] == "poisson":
                 rate = torch.tensor([2.0])  # Parameters of the Poisson distribution
                 noise = torch.poisson(rate.expand(memory_tokens.size()))  # Generating Poisson distributed noise
                 noise = noise.float()
                 noise = noise.cuda()
-                noise_rate = 0.3
+                noise_rate = 0.2
                 memory_tokens = memory_tokens + noise * noise_rate
 
         return self.cls(out), memory_tokens
