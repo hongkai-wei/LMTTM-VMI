@@ -15,8 +15,7 @@ from torch.utils.data import Dataset,DataLoader
 import sys
 
 json_path = sys.argv[1]
-# json_path = "base_medmnist.json"
-# json_path = "base_hmdb.json"
+# json_path = "base.json"
 config = Config.getInstance(json_path)
 if config["model"]["model"] == "ttm":
     from model.TTM import TokenTuringMachineEncoder

@@ -14,7 +14,7 @@ import os
 from torch.utils.data import Dataset,DataLoader
 import sys
 json_path = sys.argv[1]
-# json_path = "base_medmnist.json"
+# json_path = "base.json"
 config = Config.getInstance(json_path)
 if config["model"]["model"] == "ttm":
     from model.TTM import TokenTuringMachineEncoder
@@ -126,7 +126,7 @@ def train():
                         else:
                             out, memory_tokens = model(val_x, memory_tokens = None)
                         out = torch.argmax(out, dim=1)
-                        # val_y = val_y.squeeze(1)
+
                         all = val_y.size(0)
                         result = (out == val_y).sum().item()
                         reals_out += result

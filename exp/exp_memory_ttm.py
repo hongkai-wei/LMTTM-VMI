@@ -29,7 +29,7 @@ train_config = {
            32, 64, 96, 128, 160, 192,
            32, 64, 96, 128, 160, 192,
            32, 64, 96, 128, 160, 192],
-           
+
 }
 
 if __name__ == "__main__":
@@ -40,7 +40,6 @@ if __name__ == "__main__":
         data['train']['name'] = train_config["name"][i]
         data['model']['memory_tokens_size'] = train_config["memory_tokens_size"][i]
         data['model']['dim'] = train_config["dim"][i]
-        data['model']['num_blocks'] = train_config["num_blocks"][i]
 
 
         with open(f'./config/{exp_json}', 'w') as file:
