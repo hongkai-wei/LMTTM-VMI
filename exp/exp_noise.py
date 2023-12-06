@@ -21,9 +21,9 @@ train_config = {
                              False,True,True,True,True,True,True,],
 
     "load_memory_add_noise_mode":["None","uniform","laplace","normal","exp","gamma","poisson",
-                                  "None","uniform","laplace","normal","exp","gamma","poisson"
-                                  "None","uniform","laplace","normal","exp","gamma","poisson"
-                                  "None","uniform","laplace","normal","exp","gamma","poisson"
+                                  "None","uniform","laplace","normal","exp","gamma","poisson",
+                                  "None","uniform","laplace","normal","exp","gamma","poisson",
+                                  "None","uniform","laplace","normal","exp","gamma","poisson",
                                   "None","uniform","laplace","normal","exp","gamma","poisson"],
 
     "num_blocks":[0,0,0,0,0,0,0,

@@ -1,0 +1,11 @@
+{
+    "model": {
+        "model": "ttm",
+        "memory_token_size": 13,
+        "dim":60,
+        "num_blocks": 0
+    },
+    "train": {
+        "name": "exp0_TTM_None"
+    }
+}
