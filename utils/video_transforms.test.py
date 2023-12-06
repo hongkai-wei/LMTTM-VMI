@@ -40,4 +40,6 @@ def test_shuffle_transforms():
     assert shuffled_clip.shape == clip.shape
     assert not np.allclose(shuffled_clip.numpy(), clip.numpy(), atol=1e-3)
 
+
 test_shuffle_transforms()
+

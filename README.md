@@ -7,6 +7,7 @@ We design a neutral turing machine with detachable memory. The memory is detacha
 
 | Task | Description | Status | Start Date | End Date |
 | :---: | :---: | :---: | :---: | :---: |
+
 | 2 | Linked Memory Token Turing Machine | In progress | 2023-11-29 | - |
 | 1 | Find the best parameters of ttm | Completed | 2023-09-20 | 2023-11-23 |
 
@@ -19,13 +20,13 @@ We design a neutral turing machine with detachable memory. The memory is detacha
 | 1 | Medmnist-organmnist3d | - |
 
 ## How to run
-
+- run exp/main.py
 ## Results
 
 ## References
-
-- TTM
 - NTM
-
+- TokenLearner
+- TTM
+- DNC
 
 ## Acknowledgements
