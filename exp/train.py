@@ -13,8 +13,8 @@ import torch.nn as nn
 import os
 from torch.utils.data import Dataset,DataLoader
 import sys
-json_path = sys.argv[1]
-# json_path = "base.json"
+# json_path = sys.argv[1]
+json_path = "exp_noise.json"
 config = Config.getInstance(json_path)
 if config["model"]["model"] == "ttm":
     from model.TTM import TokenTuringMachineEncoder

@@ -9,12 +9,12 @@ def run_exp(exp_json):
 
 train_config = {
 
-    "name":["exp0_lmttm_mem32_dim32_block16", "exp1_lmttm_mem32_dim64_block16", "exp2_lmttm_mem32_dim96_block16", "exp3_lmttm_mem32_dim128_block16", "exp4_lmttm_mem32_dim160_block16", "exp5_lmttm_mem32_dim192_block16",
-            "exp6_lmttm_mem64_dim32_block16", "exp7_lmttm_mem64_dim64_block16", "exp8_lmttm_mem64_dim96_block16", "exp9_lmttm_mem64_dim128_block16", "exp10_lmttm_mem64_dim160_block16", "exp11_lmttm_mem64_dim192_block16",
-            "exp12_lmttm_mem96_dim32_block16", "exp13_lmttm_mem96_dim64_block16", "exp14_lmttm_mem96_dim96_block16", "exp15_lmttm_mem96_dim128_block16", "exp16_lmttm_mem96_dim160_block16", "exp17_lmttm_mem96_dim192_block16",
-            "exp18_lmttm_mem128_dim32_block16", "exp19_lmttm_mem128_dim64_block16", "exp20_lmttm_mem128_dim96_block16", "exp21_lmttm_mem128_dim128_block16", "exp22_lmttm_mem128_dim160_block16", "exp23_lmttm_mem128_dim192_block16",
-            "exp24_lmttm_mem160_dim32_block16", "exp25_lmttm_mem160_dim64_block16", "exp26_lmttm_mem160_dim96_block16", "exp27_lmttm_mem160_dim128_block16", "exp28_lmttm_mem160_dim160_block16", "exp29_lmttm_mem160_dim192_block16",
-            "exp30_lmttm_mem192_dim32_block16", "exp31_lmttm_mem192_dim64_block16", "exp32_lmttm_mem192_dim96_block16", "exp33_lmttm_mem192_dim128_block16", "exp34_lmttm_mem192_dim160_block16", "exp35_lmttm_mem192_dim192_block16"],
+    "name":["exp0_ttm_mem32_dim32_block16", "exp1_ttm_mem32_dim64_block16", "exp2_ttm_mem32_dim96_block16", "exp3_ttm_mem32_dim128_block16", "exp4_ttm_mem32_dim160_block16", "exp5_ttm_mem32_dim192_block16",
+            "exp6_ttm_mem64_dim32_block16", "exp7_ttm_mem64_dim64_block16", "exp8_ttm_mem64_dim96_block16", "exp9_ttm_mem64_dim128_block16", "exp10_ttm_mem64_dim160_block16", "exp11_ttm_mem64_dim192_block16",
+            "exp12_ttm_mem96_dim32_block16", "exp13_ttm_mem96_dim64_block16", "exp14_ttm_mem96_dim96_block16", "exp15_ttm_mem96_dim128_block16", "exp16_ttm_mem96_dim160_block16", "exp17_ttm_mem96_dim192_block16",
+            "exp18_ttm_mem128_dim32_block16", "exp19_ttm_mem128_dim64_block16", "exp20_ttm_mem128_dim96_block16", "exp21_ttm_mem128_dim128_block16", "exp22_ttm_mem128_dim160_block16", "exp23_ttm_mem128_dim192_block16",
+            "exp24_ttm_mem160_dim32_block16", "exp25_ttm_mem160_dim64_block16", "exp26_ttm_mem160_dim96_block16", "exp27_ttm_mem160_dim128_block16", "exp28_ttm_mem160_dim160_block16", "exp29_ttm_mem160_dim192_block16",
+            "exp30_ttm_mem192_dim32_block16", "exp31_ttm_mem192_dim64_block16", "exp32_ttm_mem192_dim96_block16", "exp33_ttm_mem192_dim128_block16", "exp34_ttm_mem192_dim160_block16", "exp35_ttm_mem192_dim192_block16"],
 
     "memory_tokens_size":[32, 32, 32, 32, 32, 32,
                           64, 64, 64, 64, 64, 64,

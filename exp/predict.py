@@ -21,7 +21,7 @@ if config["model"]["model"] == "ttm":
     from model.TTM import TokenTuringMachineEncoder
 elif config["model"]["model"] == "lmttm":
     from model.LMTTM import TokenTuringMachineEncoder
-elif config["model"]["model"] == "lmttmV2":
+elif config["model"]["model"] == "lmttm_v2":
     from model.LMTTMv2 import TokenTuringMachineEncoder
 
 log_writer = logger(config["train"]["name"] + "_test")()

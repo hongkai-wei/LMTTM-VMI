@@ -18,7 +18,7 @@
         "all_memory_mode": "TL-MHA, TL-AddErase, TL",
         "in_channels": 1,
         "dim": 96,
-        "memory_tokens_size": 256,
+        "memory_tokens_size": 96,
         "num_blocks": 16,
         "summerize_num_tokens": 8,
         "step": 28,
@@ -28,7 +28,7 @@
         "Read_use_positional_embedding": false,
         "Write_use_positional_embedding": true,
         "load_memory_add_noise": true,
-        "load_memory_add_noise_mode": "exp",
+        "load_memory_add_noise_mode": "uniform",
         "all_load_memory_add_noise_mode": "None, uniform, laplace, normal, exp, gamma, poisson",
         "variant": "variant0"
     },

@@ -176,7 +176,7 @@ class TokenTuringMachineUnit(nn.Module):
         self.tokenLearner2 = TokenLearnerModule(in_channels=config["model"]["dim"], summerize_num_tokens=config["model"]["memory_tokens_size"]//config["model"]["num_blocks"], num_groups=1, dropout_rate=config["model"]["drop_r"])
         self.tokenLearnerV11_1 = TokenLearnerModuleV11(in_channels=config["model"]["dim"], summerize_num_tokens=config["model"]["summerize_num_tokens"], num_groups=1, dropout_rate=config["model"]["drop_r"])
         self.tokenLearnerV11_2 = TokenLearnerModuleV11(in_channels=config["model"]["dim"], summerize_num_tokens=config["model"]["memory_tokens_size"], num_groups=1, dropout_rate=config["model"]["drop_r"])
-        self.TokenLearnerModuleVMem = TokenLearnerModuleVMem(in_tokens=config["model"]["memory_tokens_size"]//config["model"]["num_blocks"]+9, summerize_num_tokens=config["model"]["summerize_num_tokens"], num_groups=1, dropout_rate=config["model"]["drop_r"], dim = config["model"]["dim"])
+        self.TokenLearnerModuleVMem = TokenLearnerModuleVMem(in_tokens=(config["model"]["memory_tokens_size"]//config["model"]["num_blocks"]) + 1, summerize_num_tokens=config["model"]["summerize_num_tokens"], num_groups=1, dropout_rate=config["model"]["drop_r"], dim = config["model"]["dim"])
         self.transformerBlock = nn.TransformerEncoderLayer(d_model=config["model"]["dim"], nhead=8, dim_feedforward=config["model"]["dim"] * 3, dropout=config["model"]["drop_r"])
         self.tokenLearnerMHA1 = TokenLearnerMHA(config["model"]["summerize_num_tokens"],config)
         self.tokenLearnerMHA2 = TokenLearnerMHA(config["model"]["memory_tokens_size"],config)
