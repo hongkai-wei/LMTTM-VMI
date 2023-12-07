@@ -30,7 +30,6 @@ pth = f".\\check_point\\{config['train']['name']}\\"
 pth_files = [f"{pth}{config['train']['name']}_epoch_{i}.pth" for i in range(1, 11)] 
 
 def predict():
-    avg_acc = 0
     for i in tqdm.tqdm(range(len(pth_files)),leave=True):
         checkpoint = torch.load(pth_files[i])
         load_state = checkpoint["model"]
@@ -64,26 +63,26 @@ def predict():
 
         acc = (all_real/all_y)*100
         log_writer.add_scalar("acc per num weight ", acc, i)
-        avg_acc += acc
         all_real = 0
         all_y = 0
+        test_acc = acc
+        test_acc = round(test_acc, 1)
 
-    test_acc = avg_acc/(i+1)
-    test_acc = round(test_acc, 1)
+        print("test acc is {}%".format(test_acc))
 
-    print("test acc is {}%".format(test_acc))
+        if os.path.exists("./experiment"):
+            pass
+        else:
+            os.mkdir("./experiment")
+        experiment_path = "./experiment/experiment.txt"
+        with open(experiment_path, "a") as file:
+            # Redirecting data from print to file
+            print(f"{config['train']['name']} pth{i} test_acc: {test_acc}%", file=file)
 
-    if os.path.exists("./experiment"):
-        pass
-    else:
-        os.mkdir("./experiment")
-    experiment_path = "./experiment/experiment.txt"
     with open(experiment_path, "a") as file:
-        # Redirecting data from print to file
-        print(f"{config['train']['name']} test_acc: {test_acc}%", file=file)
         print(" ", file=file)
-
     log_writer.close()
+
 
 if __name__ == "__main__":
     predict()

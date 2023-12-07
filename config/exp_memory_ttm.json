@@ -1,12 +1,11 @@
 {
     "model": {
         "model": "ttm",
-        "memory_token_size": 13,
-        "dim": 96,
-        "num_blocks": 0,
-        "memory_tokens_size": 32
+        "memory_tokens_size": 64,
+        "dim": 64,
+        "num_blocks": 0
     },
     "train": {
-        "name": "exp2_lmttm_mem32_dim96_block16"
+        "name": "exp7_ttm_mem64_dim64"
     }
 }
