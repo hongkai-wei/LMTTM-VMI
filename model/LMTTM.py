@@ -155,7 +155,7 @@ class LinkedMemoryTTM(nn.Module):
         k = self.current_flag % self.num_blocks
         
         current_memory_block = self.split_memory_tokens[k]
-        prev_memory_block = self.split_memory_tokens[k - 1] if k > 0 else self.split_memory_tokens[7]
+        prev_memory_block = self.split_memory_tokens[k - 1] if k > 0 else self.split_memory_tokens[self.num_blocks-1]
         next_memory_block = self.split_memory_tokens[k + 1] if k < len(self.split_memory_tokens) - 1 else self.split_memory_tokens[0]
         
         self.current_flag = self.current_flag+1
@@ -310,7 +310,7 @@ class TokenTuringMachineEncoder(nn.Module):
         outs=[]
         if memory_tokens == None:
             memory_tokens = torch.zeros(b,self.config["model"]["memory_tokens_size"],c).cuda() #  c, h, w
-            # np.random.seed(42)
+            # np.random.seed(3407)
             # random_tokens = torch.rand(b, self.config["model"]["memory_tokens_size"], c).cuda()
             # memory_tokens = torch.exp(random_tokens)
         else:
@@ -332,7 +332,7 @@ class TokenTuringMachineEncoder(nn.Module):
         out = out.squeeze(2)
 
         if self.config["model"]["load_memory_add_noise"]:
-            np.random.seed(42)
+            np.random.seed(3407)
             if self.config["model"]["load_memory_add_noise_mode"] == "normal":
                 noise = torch.randn_like(memory_tokens)
                 noise = noise.cuda()

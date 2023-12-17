@@ -11,6 +11,7 @@ import tqdm
 import torchvision.transforms as transforms
 import torch.nn as nn 
 import os
+from utils.video_transforms import *
 from torch.utils.data import Dataset,DataLoader
 import sys
 json_path = sys.argv[1]
@@ -32,11 +33,18 @@ if os.path.exists(checkpoint_path):
 else:
     os.mkdir(checkpoint_path)
 
+transform_train = Compose([
+    ShuffleTransforms(mode="CWH")
+])
+transform_val = Compose([
+    ShuffleTransforms(mode="CWH")
+])
+
 data_loader = get_dataloader("train", config=config, download=False, transform=None)
 val_loader = get_dataloader("val", config=config, download=False, transform=None)
 
 
-torch.manual_seed(42)
+torch.manual_seed(3407)
 os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
 torch.use_deterministic_algorithms(True)
 

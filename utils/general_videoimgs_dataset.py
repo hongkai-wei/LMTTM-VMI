@@ -23,7 +23,7 @@ class GeneralImgsDataset(Dataset):
     def __init__(self,imgs_path:str,transforme,speicial_class_nums = 17) -> None:
     
         super().__init__()
-        random.seed(42)
+        random.seed(3407)
         # self.labels = sorted(os.listdir(imgs_path))
         if speicial_class_nums >= 51 :
             speicial_class_nums = 51

@@ -1,12 +1,12 @@
 {
     "model": {
-        "model": "lmttm_v2",
+        "model": "lmttm",
         "load_memory_add_noise": false,
         "load_memory_add_noise_mode": "None",
         "all_load_memory_add_noise_mode": "None, uniform, laplace, normal, exp, gamma, poisson",
-        "num_blocks": 96
+        "num_blocks": 16
     },
     "train": {
-        "name": "exp28_LMTTMv2_2_None"
+        "name": "exp7_LMTTM_1_None"
     }
 }

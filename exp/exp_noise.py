@@ -4,7 +4,7 @@ import json
 exp_json = "exp_noise.json" 
 
 def run_exp(exp_json):
-    # os.system("python exp\\train.py " + exp_json)
+    os.system("python exp\\train.py " + exp_json)
     os.system("python exp\\predict.py " + exp_json)
 
 train_config = {
@@ -42,7 +42,7 @@ train_config = {
 
 if __name__ == "__main__":
     for i in range(len(train_config["name"])):
-        if i == 28:
+            
             with open(f'./config/{exp_json}', 'r') as file:
                 data = json.load(file)
 

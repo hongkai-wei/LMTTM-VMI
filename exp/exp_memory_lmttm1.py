@@ -9,33 +9,31 @@ def run_exp(exp_json):
 
 train_config = {
 
-    "name":["exp0_lmttm1_mem32_dim32_block16", "exp1_lmttm1_mem32_dim64_block16", "exp2_lmttm1_mem32_dim96_block16", "exp3_lmttm1_mem32_dim128_block16", "exp4_lmttm1_mem32_dim160_block16", "exp5_lmttm1_mem32_dim192_block16",
-            "exp6_lmttm1_mem64_dim32_block16", "exp7_lmttm1_mem64_dim64_block16", "exp8_lmttm1_mem64_dim96_block16", "exp9_lmttm1_mem64_dim128_block16", "exp10_lmttm1_mem64_dim160_block16", "exp11_lmttm1_mem64_dim192_block16",
-            "exp12_lmttm1_mem96_dim32_block16", "exp13_lmttm1_mem96_dim64_block16", "exp14_lmttm1_mem96_dim96_block16", "exp15_lmttm1_mem96_dim128_block16", "exp16_lmttm1_mem96_dim160_block16", "exp17_lmttm1_mem96_dim192_block16",
-            "exp18_lmttm1_mem128_dim32_block16", "exp19_lmttm1_mem128_dim64_block16", "exp20_lmttm1_mem128_dim96_block16", "exp21_lmttm1_mem128_dim128_block16", "exp22_lmttm1_mem128_dim160_block16", "exp23_lmttm1_mem128_dim192_block16",
-            "exp24_lmttm1_mem160_dim32_block16", "exp25_lmttm1_mem160_dim64_block16", "exp26_lmttm1_mem160_dim96_block16", "exp27_lmttm1_mem160_dim128_block16", "exp28_lmttm1_mem160_dim160_block16", "exp29_lmttm1_mem160_dim192_block16",
-            "exp30_lmttm1_mem192_dim32_block16", "exp31_lmttm1_mem192_dim64_block16", "exp32_lmttm1_mem192_dim96_block16", "exp33_lmttm1_mem192_dim128_block16", "exp34_lmttm1_mem192_dim160_block16", "exp35_lmttm1_mem192_dim192_block16"],
-
-    "memory_tokens_size":[32, 32, 32, 32, 32, 32,
-                          64, 64, 64, 64, 64, 64,
-                          96, 96, 96, 96, 96, 96,
+    "name":["exp0_lmttm1_mem64_dim64_block4", "exp1_lmttm1_mem64_dim128_block4", "exp2_lmttm1_mem64_dim192_block4", "exp3_lmttm1_mem64_dim256_block4", "exp4_lmttm1_mem64_dim320_block4", "exp5_lmttm1_mem64_dim384_block4",
+            "exp6_lmttm1_mem128_dim64_block4", "exp7_lmttm1_mem128_dim128_block4", "exp8_lmttm1_mem128_dim192_block4", "exp9_lmttm1_mem128_dim256_block4", "exp10_lmttm1_mem128_dim320_block4", "exp11_lmttm1_mem128_dim384_block4",
+            "exp12_lmttm1_mem192_dim64_block4", "exp13_lmttm1_mem192_dim128_block4", "exp14_lmttm1_mem192_dim192_block4", "exp15_lmttm1_mem192_dim256_block4", "exp16_lmttm1_mem192_dim320_block4", "exp17_lmttm1_mem192_dim384_block4",
+            "exp18_lmttm1_mem256_dim64_block4", "exp19_lmttm1_mem256_dim128_block4", "exp20_lmttm1_mem256_dim192_block4", "exp21_lmttm1_mem256_dim256_block4", "exp22_lmttm1_mem256_dim320_block4", "exp23_lmttm1_mem256_dim384_block4",
+            "exp24_lmttm1_mem320_dim64_block4", "exp25_lmttm1_mem320_dim128_block4", "exp26_lmttm1_mem320_dim192_block4", "exp27_lmttm1_mem320_dim256_block4", "exp28_lmttm1_mem320_dim320_block4", "exp29_lmttm1_mem320_dim384_block4",
+            "exp30_lmttm1_mem384_dim64_block4", "exp31_lmttm1_mem384_dim128_block4", "exp32_lmttm1_mem384_dim192_block4", "exp33_lmttm1_mem384_dim256_block4", "exp34_lmttm1_mem384_dim320_block4", "exp35_lmttm1_mem384_dim384_block4"],    "memory_tokens_size":[64, 64, 64, 64, 64, 64,
                           128, 128, 128, 128, 128, 128,
-                          160, 160, 160, 160, 160, 160,
-                          192, 192, 192, 192, 192, 192],
+                          192, 192, 192, 192, 192, 192,
+                          256, 256, 256, 256, 256, 256,
+                          320, 320, 320, 320, 320, 320,
+                          384, 384, 384, 384, 384, 384],
 
-    "dim":[32, 64, 96, 128, 160, 192,
-           32, 64, 96, 128, 160, 192,
-           32, 64, 96, 128, 160, 192,
-           32, 64, 96, 128, 160, 192,
-           32, 64, 96, 128, 160, 192,
-           32, 64, 96, 128, 160, 192],
+    "dim":[64, 128, 192, 256, 320, 384,
+           64, 128, 192, 256, 320, 384,
+           64, 128, 192, 256, 320, 384,
+           64, 128, 192, 256, 320, 384,
+           64, 128, 192, 256, 320, 384,
+           64, 128, 192, 256, 320, 384],
 
-    "num_blocks":[16, 16, 16, 16, 16, 16,
-                  16, 16, 16, 16, 16, 16,
-                  16, 16, 16, 16, 16, 16,
-                  16, 16, 16, 16, 16, 16,
-                  16, 16, 16, 16, 16, 16,
-                  16, 16, 16, 16, 16, 16]
+    "num_blocks":[4, 4, 4, 4, 4, 4,
+                  4, 4, 4, 4, 4, 4,
+                  4, 4, 4, 4, 4, 4,
+                  4, 4, 4, 4, 4, 4,
+                  4, 4, 4, 4, 4, 4,
+                  4, 4, 4, 4, 4, 4]
 }
 
 if __name__ == "__main__":

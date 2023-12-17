@@ -11,6 +11,7 @@ import tqdm
 import torchvision.transforms as transforms
 import torch.nn as nn 
 import os
+from utils.video_transforms import *
 from torch.utils.data import Dataset,DataLoader
 import sys
 
@@ -24,6 +25,10 @@ elif config["model"]["model"] == "lmttm":
 elif config["model"]["model"] == "lmttm_v2":
     from model.LMTTMv2 import TokenTuringMachineEncoder
 
+transform_test = Compose([
+    ShuffleTransforms(mode="CWH")
+])
+
 log_writer = logger(config["train"]["name"] + "_test")()
 test_loader = get_dataloader("test", config=config, download=False, transform=None)
 pth = f".\\check_point\\{config['train']['name']}\\"
@@ -31,6 +36,7 @@ pth_files = [f"{pth}{config['train']['name']}_epoch_{i}.pth" for i in range(1, 1
 
 
 def predict():
+    avg_acc = 0
     for i in tqdm.tqdm(range(len(pth_files)),leave=True):
         checkpoint = torch.load(pth_files[i])
         load_state = checkpoint["model"]
@@ -79,7 +85,12 @@ def predict():
         with open(experiment_path, "a") as file:
             # Redirecting data from print to file
             print(f"{config['train']['name']} pth{i} test_acc: {test_acc}%", file=file)
-
+        avg_acc += test_acc
+    avg_acc = avg_acc/10
+    avg_acc = round(avg_acc, 3)
+    with open(experiment_path, "a") as file:
+            # Redirecting data from print to file
+            print(f"{config['train']['name']} avg_acc: {avg_acc}%", file=file)
     with open(experiment_path, "a") as file:
         print(" ", file=file)
     log_writer.close()

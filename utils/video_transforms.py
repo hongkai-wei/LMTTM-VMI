@@ -27,7 +27,7 @@ class ShuffleTransforms:
     def __call__(self, clip):
         assert len(clip.shape) == 4, "clip should be a 4D tensor."
         C, T, W, H = clip.shape
-        np.random.seed(42)
+        np.random.seed(3407)
         if "C" in self.mode:
             index = np.arange(C)
             np.random.shuffle(index)

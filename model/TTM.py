@@ -270,12 +270,13 @@ class TokenTuringMachineEncoder(nn.Module):
         elif self.config["model"]["preprocess_mode"] == "resnet18":
             input = self.pre2(input)
             input = self.pre_dim(input)
+            input = self.relu(input)
         b, t, _, c = input.shape
 
         outs=[]
         if memory_tokens == None:
             memory_tokens = torch.zeros(b,self.config["model"]["memory_tokens_size"],c).cuda() #  c, h, w
-            # np.random.seed(42)
+            # np.random.seed(3407)
             # random_tokens = torch.rand(b, self.config["model"]["memory_tokens_size"], c).cuda()
             # memory_tokens = torch.exp(random_tokens)
         else:
@@ -292,7 +293,7 @@ class TokenTuringMachineEncoder(nn.Module):
 
 
         if self.config["model"]["load_memory_add_noise"]:
-            np.random.seed(42)
+            np.random.seed(3407)
             if self.config["model"]["load_memory_add_noise_mode"] == "normal":
                 noise = torch.randn_like(memory_tokens)
                 noise = noise.cuda()
