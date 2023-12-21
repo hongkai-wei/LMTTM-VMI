@@ -56,7 +56,7 @@ def predict():
                 out, memory_tokens = model(x, memory_tokens = None)
 
             out = torch.argmax(out, dim=1)
-            if config["dataset_name"] == "organmnist3d":
+            if config["dataset_name"] == "organmnist3d" or config["dataset_name"] == "nodulemnist3d":
                 y = y.squeeze(1)
             all = y.size(0)
             result = (out == y).sum().item()

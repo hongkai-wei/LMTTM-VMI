@@ -8,7 +8,7 @@ def run_exp(exp_json):
     os.system("python exp\\predict.py " + exp_json)
 
 train_config = {
-    "name":["exp006"]
+    "name":["exp0001"]
 }
 
 if __name__ == "__main__":

@@ -86,7 +86,7 @@ def train():
             # input = input.transpose(1,2)# for medmnist ,if the input format is  B,T,C,H,W,please delete this lin
             target = target.to("cuda", dtype=torch.long)  # B w
 
-            if config["dataset_name"] == "organmnist3d":
+            if config["dataset_name"] == "organmnist3d" or config["dataset_name"] == "nodulemnist3d":
                 target = target.squeeze(1)
 
             model.train()
@@ -118,7 +118,7 @@ def train():
                         val_x = val_x.to("cuda", dtype=torch.float32)
                         val_y = val_y.to("cuda", dtype=torch.long)
 
-                        if config["dataset_name"] == "organmnist3d":
+                        if config["dataset_name"] == "organmnist3d" or config["dataset_name"] == "nodulemnist3d":
                             val_y = val_y.squeeze(1)
 
                         if (config['train']["load_memory_tokens"]):
