@@ -21,8 +21,6 @@ if config["model"]["model"] == "ttm":
     from model.TTM import TokenTuringMachineEncoder
 elif config["model"]["model"] == "lmttm":
     from model.LMTTM import TokenTuringMachineEncoder
-elif config["model"]["model"] == "lmttmV2":
-    from model.LMTTMv2 import TokenTuringMachineEncoder
 
 log_writer = logger(config["train"]["name"] + "_test")()
 test_loader = get_dataloader("test", config=config, download=False, transform=None)
@@ -49,8 +47,9 @@ def predict():
                 out, memory_tokens = model(x, memory_tokens = None)
 
             out = torch.argmax(out, dim=1)
-            if config["dataset_name"] == "organmnist3d" or config["dataset_name"] == "nodulemnist3d":
-                y = y.squeeze(1)
+            # if config["dataset_name"] == "organmnist3d" or config["dataset_name"] == "nodulemnist3d" or config["dataset_name"] == "vesselmnist3d":
+            y = y.squeeze(1)
+            
             all = y.size(0)
             result = (out == y).sum().item()
 

@@ -5,7 +5,7 @@ exp_json = "exp_memory_lmttm.json"
 
 def run_exp(exp_json): 
     os.system("python exp\\train.py " + exp_json)
-    os.system("python exp\\predict.py " + exp_json)
+    os.system("python exp\\evaluate.py " + exp_json)
 
 train_config = {
 

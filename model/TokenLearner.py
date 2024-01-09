@@ -108,12 +108,13 @@ class TokenLearnerModuleV11(nn.Module):
         outputs = self.dropout(outputs)
 
         return outputs
-
-class TokenLearnerModuleVMem(nn.Module):
+    
+class TokenLearnerModuleV12(nn.Module):
+# Unlike the first two TokenLearners, this one is Memory-driven, not input-driven.
 # The value of dropout_rate is 0. which means that dropout is not used.
     def __init__(self, in_tokens, summerize_num_tokens, num_groups, dropout_rate, dim):
 
-        super(TokenLearnerModuleVMem, self).__init__()
+        super(TokenLearnerModuleV12, self).__init__()
         self.in_tokens = in_tokens
         self.summerize_num_tokens = summerize_num_tokens
         # in_channels and out_channels must both be divisible by groups

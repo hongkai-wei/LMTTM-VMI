@@ -1,3 +1,4 @@
 torchshow
 pytorchvideo
 medmnist
+classeval

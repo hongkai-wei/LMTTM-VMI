@@ -22,9 +22,6 @@ if config["model"]["model"] == "ttm":
     from model.TTM import TokenTuringMachineEncoder
 elif config["model"]["model"] == "lmttm":
     from model.LMTTM import TokenTuringMachineEncoder
-elif config["model"]["model"] == "lmttm_v2":
-    from model.LMTTMv2 import TokenTuringMachineEncoder
-
 transform_test = Compose([
     ShuffleTransforms(mode="CWH")
 ])
@@ -32,7 +29,7 @@ transform_test = Compose([
 log_writer = logger(config["train"]["name"] + "_test")()
 test_loader = get_dataloader("test", config=config, download=False, transform=None)
 pth = f".\\check_point\\{config['train']['name']}\\"
-pth_files = [f"{pth}{config['train']['name']}_epoch_{i}.pth" for i in range(1, 11)] 
+pth_files = [f"{pth}{config['train']['name']}_epoch_{i}.pth" for i in range(1, 21)] 
 
 
 def predict():
@@ -56,8 +53,9 @@ def predict():
                 out, memory_tokens = model(x, memory_tokens = None)
 
             out = torch.argmax(out, dim=1)
-            if config["dataset_name"] == "organmnist3d" or config["dataset_name"] == "nodulemnist3d":
-                y = y.squeeze(1)
+            # if config["dataset_name"] == "organmnist3d" or config["dataset_name"] == "nodulemnist3d" or config["dataset_name"] == "vesselmnist3d":
+            y = y.squeeze(1)
+            
             all = y.size(0)
             result = (out == y).sum().item()
 
@@ -86,7 +84,7 @@ def predict():
             # Redirecting data from print to file
             print(f"{config['train']['name']} pth{i} test_acc: {test_acc}%", file=file)
         avg_acc += test_acc
-    avg_acc = avg_acc/10
+    avg_acc = avg_acc/20
     avg_acc = round(avg_acc, 3)
     with open(experiment_path, "a") as file:
             # Redirecting data from print to file

@@ -3,21 +3,20 @@ import torch.nn as nn
 from einops import rearrange, reduce, repeat
 from einops.layers.torch import Rearrange
 import torch.nn.init as init
-from .tokenLearner_network import TokenLearnerModule, TokenLearnerModuleV11
+from .TokenLearner import TokenLearnerModule, TokenLearnerModuleV11
 from config.configure import Config
 import numpy as np
 import torchvision.models as models
 
-class PreProcess(nn.Module): 
-    # Input：Batch,Channels,Step,H,W  
-    # Output：Batch，Step，Tokens，Channels
+class PreProcess3D(nn.Module): 
+    # Input：Batch, Channels, Step, H, W  
+    # Output：Batch, Step, Tokens, Channels
     def __init__(self,config) -> None:
-        super(PreProcess, self).__init__()
+        super(PreProcess3D, self).__init__()
         self.conv = nn.Conv3d(in_channels=config["model"]["in_channels"], 
                              out_channels=config["model"]["dim"],
                              kernel_size=config["model"]["patch_size"], 
                              stride=config["model"]["patch_size"], 
-
                              padding="valid")
         self.relu = nn.ReLU()
 
@@ -31,10 +30,42 @@ class PreProcess(nn.Module):
         x = x.permute(0, 2, 3, 1)
         return x
     
-class PreProcessV2(nn.Module):
+class PreProcess3DWithBN(nn.Module): 
+    # Input：Batch, Channels, Step, H, W  
+    # Output：Batch, Step, Tokens, Channels
+    def __init__(self,config) -> None:
+        super(PreProcess3DWithBN, self).__init__()
+        self.conv = nn.Conv3d(in_channels=config["model"]["in_channels"], 
+                             out_channels=64,
+                             kernel_size=config["model"]["patch_size"], 
+                             stride=config["model"]["patch_size"], 
+                             padding="valid")
+        self.relu = nn.ReLU()
+        self.bn1 = nn.BatchNorm3d(64)
+        self.conv2 = nn.Conv3d(in_channels=64, 
+                             out_channels=config["model"]["dim"],
+                             kernel_size=3, 
+                             stride=1, 
+                             padding="same")
+        self.bn2 = nn.BatchNorm3d(config["model"]["dim"])
+
+    def forward(self, input):
+        # input = input.transpose(1, 2)
+        x = self.conv(input)
+        x = self.bn1(x)
+        x = self.relu(x)
+        x = self.conv2(x)
+        x = self.bn2(x)
+        x= self.relu(x)
+
+        x = x.flatten(3)
+        x = x.permute(0, 2, 3, 1)
+        return x
+
+class PreProcessResnet18(nn.Module):
 
     def __init__(self):
-        super(PreProcessV2, self).__init__()
+        super(PreProcessResnet18, self).__init__()
         self.resnet = models.resnet18(pretrained=False).cuda()
         self.resnet.fc = nn.Identity()
         # for param in self.resnet.parameters():
@@ -51,7 +82,7 @@ class PreProcessV2(nn.Module):
         x = self.resnet.layer2(x)#128
         # x = self.resnet.layer3(x) #256
         # x = self.resnet.layer4(x)#512
-        he,dim,h,w=x.shape
+        he, dim, h, w = x.shape
         x=x.view(batch_size,steps,-1,dim)
         return x
 
@@ -63,7 +94,7 @@ class TokenLearnerMHA(nn.Module):
 
 
     def forward(self, input):
-        # [0]is output，[1]is weight
+        # [0]is output,[1]is weight
         return self.attn(self.query, input, input)[0]
 
 class TokenAddEraseWrite(nn.Module):
@@ -201,7 +232,7 @@ class TokenTuringMachineUnit(nn.Module):
             output_tokens = all_tokens # all_tokens shape is [batch,mem_size+special_num_token,config["model"]["dim"]]
 
             for _ in range(self.num_layers):
-                # Token mixing，different token interoperability
+                # Token mixing,different token interoperability
                 x_output_tokens = output_tokens
                 x_output_tokens = self.norm(x_output_tokens)
 
@@ -211,7 +242,7 @@ class TokenTuringMachineUnit(nn.Module):
                 x_output_tokens = x_output_tokens + output_tokens
                 x_output_tokens = self.dropout(x_output_tokens)
 
-                # Channel mixing，internal token interoperability
+                # Channel mixing,internal token interoperability
 
                 y_output_tokens = self.norm(x_output_tokens)
                 y_output_tokens = self.mixer_channels__block(y_output_tokens)
@@ -258,8 +289,8 @@ class TokenTuringMachineEncoder(nn.Module):
         self.memory_tokens = torch.zeros(config["batch_size"], config["model"]["memory_tokens_size"], config["model"]["dim"]).cuda()
         self.tokenTuringMachineUnit = TokenTuringMachineUnit(config)
         self.cls = nn.Linear(config["model"]["dim"], config["model"]["out_class_num"])
-        self.pre1 = PreProcess(config)
-        self.pre2 = PreProcessV2()
+        self.pre1 = PreProcess3D(config)
+        self.pre2 = PreProcessResnet18()
         self.relu = nn.ReLU()
         self.pre_dim =nn.Linear(128, config["model"]["dim"])
         self.config = config
@@ -267,10 +298,11 @@ class TokenTuringMachineEncoder(nn.Module):
     def forward(self, input, memory_tokens):
         if self.config["model"]["preprocess_mode"] == "3d":
             input = self.pre1(input)
-        elif self.config["model"]["preprocess_mode"] == "resnet18":
+        elif self.config["model"]["preprocess_mode"] == "3dBN":
             input = self.pre2(input)
+        elif self.config["model"]["preprocess_mode"] == "resnet18":
+            input = self.pre3(input)
             input = self.pre_dim(input)
-            input = self.relu(input)
         b, t, _, c = input.shape
 
         outs=[]
