@@ -20,7 +20,7 @@ from torch.utils.data import Dataset,DataLoader
 
 json_path = sys.argv[1]
 # json_path = "base.json"
-config = Config.getInstance()
+config = Config.getInstance(json_path)
 os.environ["CUDA_VISIBLE_DEVICES"] = config["train"]["gpu"]
 
 if config["model"]["model"] == "ttm":
