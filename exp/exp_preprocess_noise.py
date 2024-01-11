@@ -30,7 +30,7 @@ if __name__ == "__main__":
             data['train']['name'] = train_config["name"][i]
             data['model']['preprocess_mode'] = train_config["preprocess_mode"][i]
             data['model']['load_memory_add_noise'] = train_config["load_memory_add_noise"][i]
-            data['model']['load_memory_add_noise'] = train_config["load_memory_add_noise"][i]
+            data['model']['load_memory_add_noise_mode'] = train_config["load_memory_add_noise_mode"][i]
 
             with open(f'./config/{exp_json}', 'w') as file:
                 json.dump(data, file, indent=4)
