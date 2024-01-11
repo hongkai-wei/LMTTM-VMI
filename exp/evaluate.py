@@ -18,9 +18,11 @@ import os
 from utils.video_transforms import *
 from torch.utils.data import Dataset,DataLoader
 
-# json_path = sys.argv[1]
+json_path = sys.argv[1]
 # json_path = "base.json"
 config = Config.getInstance()
+os.environ["CUDA_VISIBLE_DEVICES"] = config["train"]["gpu"]
+
 if config["model"]["model"] == "ttm":
     from model.TTM import TokenTuringMachineEncoder
 elif config["model"]["model"] == "lmttm":
@@ -96,7 +98,7 @@ if __name__ == "__main__":
             pass
         else:
             os.mkdir("./experiment")
-        experiment_path = "./experiment/experiment.txt"
+        experiment_path = f".\\experiment\\" + config["dataset_name"] + "_exp.txt"
         with open(experiment_path, "a") as file:
             # Redirecting data from print to file
             print(f"{config['train']['name']} pth{i} evaluate_auc: {evaluate_auc}", file=file)

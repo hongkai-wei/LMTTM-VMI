@@ -1,7 +1,8 @@
 {
-    "batch_size": 64,
+    "batch_size": 60,
     "dataset_name": "nodulemnist3d",
-    "all_dataset_name": "organmnist3d, nodulemnist3d, fracturemnist3d, adrenalmnist3d, vesselmnist3d, synapsemnist3d, hmdb_dataset0/1/2",
+    "all_dataset_name1": "organmnist3d(11), nodulemnist3d(2), fracturemnist3d(3)",
+    "all_dataset_name2": "adrenalmnist3d(2), vesselmnist3d(2), synapsemnist3d(2), hmdb_dataset0/1/2",
     "root": "./datasets_data/medmnist",
     "all_root": "./datasets_data/medmnist  ./datasets_data/hmdb/dataset0 1 2",
     "log_dir": "./logs",
@@ -17,8 +18,8 @@
         "memory_mode": "TL",
         "all_memory_mode": "TL-MHA, TL-AddErase, TL",
         "in_channels": 1,
-        "dim": 256,
-        "memory_tokens_size": 256,
+        "dim": 448,
+        "memory_tokens_size": 448,
         "num_blocks": 4,
         "summerize_num_tokens": 8,
         "step": 28,
@@ -28,12 +29,12 @@
         "Write_use_positional_embedding": true,
         "load_memory_add_noise": true,
         "load_memory_add_noise_mode": "normal",
-        "all_load_memory_add_noise_mode": "None, uniform, laplace, normal, exp, gamma, poisson",
-        "variant": "variant0"
+        "all_load_memory_add_noise_mode": "None, uniform, laplace, normal, exp, gamma, poisson"
     },
     "train": {
-        "name": "expttest001",
-        "epoch": 50,
+        "gpu": "0",
+        "name": "test0001",
+        "epoch": 20,
         "optimizer": "Adam",
         "lr": 0.0001,
         "weight_decay": 0.0001,

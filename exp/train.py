@@ -17,6 +17,8 @@ import sys
 json_path = sys.argv[1]
 # json_path = "exp_noise.json"
 config = Config.getInstance(json_path)
+os.environ["CUDA_VISIBLE_DEVICES"] = config["train"]["gpu"]
+
 if config["model"]["model"] == "ttm":
     from model.TTM import TokenTuringMachineEncoder
 elif config["model"]["model"] == "lmttm":
@@ -156,7 +158,7 @@ def train():
         pass
     else:
         os.mkdir("./experiment")
-    experiment_path = "./experiment/experiment.txt"
+    experiment_path = f".\\experiment\\" + config["dataset_name"] + "_exp.txt"
     with open(experiment_path, "a") as file:
         print(f"{config['train']['name']} convergence_batch: {convergence_batch}, train_loss: {final_save_loss}, and convergence_batch={convergence_epoch}, val_acc is{out_accs}", file=file)
 if __name__ == "__main__":

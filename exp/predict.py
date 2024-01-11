@@ -18,6 +18,8 @@ import sys
 json_path = sys.argv[1]
 # json_path = "base.json"
 config = Config.getInstance(json_path)
+os.environ["CUDA_VISIBLE_DEVICES"] = config["train"]["gpu"]
+
 if config["model"]["model"] == "ttm":
     from model.TTM import TokenTuringMachineEncoder
 elif config["model"]["model"] == "lmttm":
@@ -79,7 +81,7 @@ def predict():
             pass
         else:
             os.mkdir("./experiment")
-        experiment_path = "./experiment/experiment.txt"
+        experiment_path = f".\\experiment\\" + config["dataset_name"] + "_exp.txt"
         with open(experiment_path, "a") as file:
             # Redirecting data from print to file
             print(f"{config['train']['name']} pth{i} test_acc: {test_acc}%", file=file)

@@ -1,4 +1,11 @@
 torchshow
-pytorchvideo
+einops==0.7.0
+h5py==3.10.0
+numpy
+Pillow==10.0.0
+pytorchvideo==0.1.5
+requests==2.31.0
+six==1.16.0
+tensorboard==2.14.0
+tqdm==4.66.1
 medmnist
-classeval
