@@ -20,8 +20,6 @@ if config["model"]["model"] == "ttm":
     from model.TTM import TokenTuringMachineEncoder
 elif config["model"]["model"] == "lmttm":
     from model.LMTTM import TokenTuringMachineEncoder
-elif config["model"]["model"] == "lmttm_v2":
-    from model.LMTTMv2 import TokenTuringMachineEncoder
 
 log_writer = logger(config['train']["name"] + "_train")()
 if not os.path.exists("./check_point"):
@@ -36,7 +34,7 @@ data_loader = get_dataloader("train", config=config, download=False, transform=N
 val_loader = get_dataloader("val", config=config, download=False, transform=None)
 
 
-torch.manual_seed(42)
+torch.manual_seed(3407)
 os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
 torch.use_deterministic_algorithms(True)
 
@@ -72,7 +70,7 @@ def train():
     avg_loss = 0
     reals_out  =  0
     reals_all = 0
-    convergence_batch2 = -1
+    convergence_epoch = -1
     acc_lis=[]
     for _ in epoch_bar:
         epoch_bar.set_description(
@@ -86,8 +84,8 @@ def train():
             # input = input.transpose(1,2)# for medmnist ,if the input format is  B,T,C,H,W,please delete this lin
             target = target.to("cuda", dtype=torch.long)  # B w
 
-            if config["dataset_name"] == "organmnist3d":
-                target = target.squeeze(1)
+            # if config["dataset_name"] == "organmnist3d" or config["dataset_name"] == "nodulemnist3d" or config["dataset_name"] == "vesselmnist3d":
+            target = target.squeeze(1)
 
             model.train()
             if (config['train']["load_memory_tokens"]):
@@ -108,7 +106,7 @@ def train():
                 avg_loss = sum(losses)/len(losses)          
                 if avg_loss <= 0.2 and convergence_flag == -1:
                     convergence_batch = (train_nums * config["batch_size"])
-                    convergence_batch2 = _ + 1
+                    convergence_epoch = _ + 1
                     convergence_flag = 1
                 log_writer.add_scalar("loss per 100 step", avg_loss, train_nums)
                 losses = []
@@ -118,8 +116,8 @@ def train():
                         val_x = val_x.to("cuda", dtype=torch.float32)
                         val_y = val_y.to("cuda", dtype=torch.long)
 
-                        if config["dataset_name"] == "organmnist3d":
-                            val_y = val_y.squeeze(1)
+                        # if config["dataset_name"] == "organmnist3d" or config["dataset_name"] == "nodulemnist3d" or config["dataset_name"] == "vesselmnist3d":
+                        val_y = val_y.squeeze(1)
 
                         if (config['train']["load_memory_tokens"]):
                             out, memory_tokens = model(val_x, memory_tokens)
@@ -144,7 +142,7 @@ def train():
     final_save_loss = round(final_save_loss, 2)
     out_acc=sum(acc_lis)/len(acc_lis)
     out_accs=round(out_acc,4)
-    print(f"train loss is {final_save_loss},and convergence batch is {convergence_batch},and convergence _epoch is {convergence_batch2},acc is{out_accs}")
+    print(f"train loss is {final_save_loss}, and convergence batch is {convergence_batch}, and convergence _epoch is {convergence_epoch}, val_acc is{out_accs}")
 
     if os.path.exists("./experiment"):
         pass
@@ -152,7 +150,7 @@ def train():
         os.mkdir("./experiment")
     experiment_path = "./experiment/experiment.txt"
     with open(experiment_path, "a") as file:
-        print(f"{config['train']['name']} convergence_batch: {convergence_batch} , train_loss: {final_save_loss},and sL_batch={convergence_batch2},acc is{out_accs}", file=file)
+        print(f"{config['train']['name']} convergence_batch: {convergence_batch}, train_loss: {final_save_loss}, and convergence_batch={convergence_epoch}, val——acc is{out_accs}", file=file)
 if __name__ == "__main__":
     time_1 = time.time()
     train()

@@ -33,11 +33,12 @@ class MedMNISTDataset:
 
     def __len__(self):
         return self.dataset.__len__()
-    
-    
+
 if __name__ == "__main__":
     from torchshow import torchshow
     dataset = MedMNISTDataset()
     dataloader = DataLoader(dataset, batch_size=1, shuffle=True)
     for i, (data, label) in enumerate(dataloader):
+        # print(data[0].permute(1, 0, 2, 3))
+        
         torchshow.show_video(data[0].permute(1, 0, 2, 3))

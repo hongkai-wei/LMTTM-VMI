@@ -1,12 +1,17 @@
 {
+    "dataset_name": "organmnist3d",
+    "all_dataset_name1": "organmnist3d(1000, 11), nodulemnist3d(350, 2)",
+    "all_dataset_name2": "fracturemnist3d(70, 3), adrenalmnist3d(50, 2) ",
+    "all_dataset_name3": "vesselmnist3d(70,2), synapsemnist3d(70, 2)",
     "model": {
         "model": "ttm",
-        "memory_token_size": 13,
-        "dim": 96,
-        "num_blocks": 0,
-        "memory_tokens_size": 32
+        "dim": 256,
+        "memory_tokens_size": 256,
+        "out_class_num": 11
     },
     "train": {
-        "name": "exp2_lmttm_mem32_dim96_block16"
+        "gpu": "0",
+        "name": "exp7_LMTTM_1_None",
+        "epoch": 1000
     }
 }
