@@ -1,0 +1,17 @@
+{
+    "dataset_name": "organmnist3d",
+    "all_dataset_name1": "organmnist3d(1000, 11), nodulemnist3d(350, 2)",
+    "all_dataset_name2": "fracturemnist3d(70, 3), adrenalmnist3d(50, 2) ",
+    "all_dataset_name3": "vesselmnist3d(70,2), synapsemnist3d(70, 2)",
+    "model": {
+        "model": "lmttm",
+        "dim": 256,
+        "memory_tokens_size": 256,
+        "out_class_num": 11
+    },
+    "train": {
+        "gpu": "0",
+        "name": "exp7_LMTTM_1_None",
+        "epoch": 1000
+    }
+}
