@@ -13,8 +13,8 @@ import torch.nn as nn
 import os
 from torch.utils.data import Dataset,DataLoader
 import sys
-# json_path = sys.argv[1]
-json_path = "base.json"
+json_path = sys.argv[1]
+# json_path = "base.json"
 config = Config.getInstance(json_path)
 if config["model"]["model"] == "ttm":
     from model.TTM import TokenTuringMachineEncoder
@@ -30,7 +30,7 @@ if os.path.exists(checkpoint_path):
 else:
     os.mkdir(checkpoint_path)
 
-data_loader = get_dataloader("train", config=config, download=False, transform=None)
+data_loader = get_dataloader("train", config=config, download=True, transform=None)
 val_loader = get_dataloader("val", config=config, download=False, transform=None)
 
 

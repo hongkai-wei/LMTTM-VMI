@@ -13,9 +13,8 @@ import torch.nn as nn
 import os
 from torch.utils.data import Dataset,DataLoader
 import sys
-
-# json_path = sys.argv[1]
-json_path = "base.json"
+json_path = sys.argv[1]
+# json_path = "base.json"
 config = Config.getInstance(json_path)
 os.environ["CUDA_VISIBLE_DEVICES"] = config["train"]["gpu"]
 

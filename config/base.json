@@ -1,5 +1,5 @@
 {
-    "batch_size": 60,
+    "batch_size": 32,
     "dataset_name": "adrenalmnist3d",
     "all_dataset_name1": "organmnist3d(11), nodulemnist3d(2), fracturemnist3d(3)",
     "all_dataset_name2": "adrenalmnist3d(2), vesselmnist3d(2), synapsemnist3d(2), hmdb_dataset0/1/2",
@@ -33,7 +33,7 @@
     },
     "train": {
         "gpu": "0",
-        "name": "test0001",
+        "name": "Train",
         "epoch": 20,
         "optimizer": "Adam",
         "lr": 0.0001,
