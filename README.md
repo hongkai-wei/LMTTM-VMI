@@ -79,12 +79,12 @@ Illustration of different memory. (a) is the memory structure of TTM, where the
 entire memory block is iteratively updated during the interaction. (b) is the memory
 structure of our LMTTM, which can be viewed as a chain of k memory units linked
 together, and is iteratively updated one memory unit at a time during the interaction.
-![framework](./images/linkedmemory.png)
+![framework](https://github.com/WHKai666666/LMTTM-VMI/blob/main/images/linkedmemory.png)
 
 ### Read from Linked Memory
 
 Illustration of different Reads. (a) is the entire block of memory that will be read by the TTM. (b) is the coordinated read operation for the current moment $t$, the past moment $t-1$ and the future moment $t+1$.
-![framework](./images/read.png)
+![framework](https://github.com/WHKai666666/LMTTM-VMI/blob/main/images/read.png)
 
 ### Memory Distillation Unit
 
@@ -93,7 +93,7 @@ In the LMTTM architecture, the processing unit is designed as <img src="https://
 ### Write to Linked Memory
 
 Illustration of different Writes. (a) is the entire block of memories from the current moment in TTM being written to the next moment in the entire block. (b) is the entire block of tri-temporal memories from the current moment $t$, the past moment $t-1$, and the future moment $t+1$ being synergized and written to the future moment $t+1$ in LMTTM.
-![framework](./images/write.png)
+![framework](https://github.com/WHKai666666/LMTTM-VMI/blob/main/images/write.png)
 
 ## Requirement
 
