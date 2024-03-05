@@ -71,7 +71,7 @@ Our experiments on MedMNIST v2 datasets demonstrate the superiority of **LMTTM**
 ## LMTTM-Architecture
 
 Schematics of the Linked Memory Token Turing Machine (LMTTM). On the left, the network's processing at time stamp $t$ is depicted, where the current memory block <img src="https://latex.codecogs.com/svg.image?\textrm{M}^{t}"/> and its adjacent blocks <img src="https://latex.codecogs.com/svg.image?\textrm{M}^{t-1}"/> and <img src="https://latex.codecogs.com/svg.image?\textrm{M}^{t+1}"/> are synergistically processed by the Tri-Temporal Memory Collaborative (T-TMC) module, which we will refer to as Simplified Memory. Simplified memory, along with preprocessed input tokens, is read through the Read module, and the extracted information is then refined into more efficient output tokens by the Memory Distillation Unit(MDU) for image classification. The simplified Memory, input tokens, and output tokens are then written in the subsequent Memory block <img src="https://latex.codecogs.com/svg.image?\textrm{M}^{t+1}"/> via the Write module, completing the LMTTM cycle for time stamp $t$ and facilitating a linked cyclic update of the Memory content. The right side shows a similar process for time stamp $t+1$.
-![framework](./images/framework.png)
+![framework](https://github.com/WHKai666666/LMTTM-VMI/blob/main/images/framework.png)
 
 ### Linked Memory
 
