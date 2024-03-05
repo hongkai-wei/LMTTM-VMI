@@ -128,6 +128,7 @@ Modify the `dataset_name`, `out_class_num` and `epoch` parameters in the configu
 And then activate your virtual environment, followed by executing `python train.py base.json`. 
 
 ###  Test
+
 As with the TRAIN process, modify the corresponding parameters, then activate the virtual environment and execute `python predict.py base.json`
 
 ## Acknowledge
@@ -138,3 +139,4 @@ This work is based on [TTM(Token Turing Machine)](https://arxiv.org/abs/2211.091
 LMTTM's code is released under the Apache License 2.0. A permissive license whose main conditions require preservation of copyright and license notices. Contributors provide an express grant of patent rights. Licensed works, modifications, and larger works may be distributed under different terms and without source code.See [LICENSE](https://github.com/WHKai666666/LMTTM-VMI/blob/main/LICENSE "LICENSE") for further details. 
 
 ------
+
