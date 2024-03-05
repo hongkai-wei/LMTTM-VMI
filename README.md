@@ -28,7 +28,7 @@ Our experiments on MedMNIST v2 datasets demonstrate the superiority of **LMTTM**
 ## Requirement
 | Name  |Version   |
 | ------------ | ------------ |
-|  CUDA | 10.1  |
+|  CUDA | >=10.1  |
 |  Pytorch | 1.12.1  |
 |  Python | 3.8  |
 
@@ -40,7 +40,7 @@ pip install -r requirement.txt
 ## Preparation
 Clone the repository
 ```shell
-git clone git@github.com:WHKai666666/LMTTM-VMI.git
+git clone <repository url>
 ```
 ## MedMNIST3D
 [MedMNIST v2](https://github.com/MedMNIST/MedMNIST) contains a collection of six preprocessed 3D volumetric medical image datasets. It is designed to be educational, standardized, diverse, and lightweight and can be used as a general classification benchmark in 3D volumetric medical image analysis.  
