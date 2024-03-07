@@ -1,4 +1,4 @@
-# [LMTTM-VMI: Linked Memory Token Turing Machine for 3D Volumetric Medical Image Classification](https://whkai666666.github.io/LMTTM-VMI_Page/)
+# LMTTM-VMI: Linked Memory Token Turing Machine for 3D Volumetric Medical Image Classification
 
 Biomedical imaging is vital for the diagnosis and treatment of various medical conditions, yet the effective integration of deep learning technologies into this field presents challenges. Traditional methods often struggle to efficiently capture the spatiotemporal characteristics of image sequences, limiting memory utilization and model adaptability. 
 To address this, we introduce a **L**inked **M**emory **T**oken **T**uring **M**achine (**LMTTM**), which utilizes external linked memory to efficiently process spatial-temporal dependencies in 3D volumetric medical images, aiding in accurate diagnoses. **LMTTM** can efficiently record the features of 3D volumetric medical images in an external linked memory module, enhancing complex image classification through improved feature accumulation and reasoning capabilities.
@@ -71,7 +71,7 @@ Our experiments on MedMNIST v2 datasets demonstrate the superiority of **LMTTM**
 ## LMTTM-Architecture
 
 Schematics of the Linked Memory Token Turing Machine (LMTTM). On the left, the network's processing at time stamp $t$ is depicted, where the current memory block <img src="https://latex.codecogs.com/svg.image?\textrm{M}^{t}"/> and its adjacent blocks <img src="https://latex.codecogs.com/svg.image?\textrm{M}^{t-1}"/> and <img src="https://latex.codecogs.com/svg.image?\textrm{M}^{t+1}"/> are synergistically processed by the Tri-Temporal Memory Collaborative (T-TMC) module, which we will refer to as Simplified Memory. Simplified memory, along with preprocessed input tokens, is read through the Read module, and the extracted information is then refined into more efficient output tokens by the Memory Distillation Unit(MDU) for image classification. The simplified Memory, input tokens, and output tokens are then written in the subsequent Memory block <img src="https://latex.codecogs.com/svg.image?\textrm{M}^{t+1}"/> via the Write module, completing the LMTTM cycle for time stamp $t$ and facilitating a linked cyclic update of the Memory content. The right side shows a similar process for time stamp $t+1$.
-![framework](https://github.com/WHKai666666/LMTTM-VMI/blob/main/images/framework.png)
+![framework](./images/framework.png)
 
 ### Linked Memory
 
@@ -79,12 +79,12 @@ Illustration of different memory. (a) is the memory structure of TTM, where the
 entire memory block is iteratively updated during the interaction. (b) is the memory
 structure of our LMTTM, which can be viewed as a chain of k memory units linked
 together, and is iteratively updated one memory unit at a time during the interaction.
-![framework](https://github.com/WHKai666666/LMTTM-VMI/blob/main/images/linkedmemory.png)
+![framework](./images/linkedmemory.png)
 
 ### Read from Linked Memory
 
 Illustration of different Reads. (a) is the entire block of memory that will be read by the TTM. (b) is the coordinated read operation for the current moment $t$, the past moment $t-1$ and the future moment $t+1$.
-![framework](https://github.com/WHKai666666/LMTTM-VMI/blob/main/images/read.png)
+![framework](./images/read.png)
 
 ### Memory Distillation Unit
 
@@ -93,7 +93,7 @@ In the LMTTM architecture, the processing unit is designed as <img src="https://
 ### Write to Linked Memory
 
 Illustration of different Writes. (a) is the entire block of memories from the current moment in TTM being written to the next moment in the entire block. (b) is the entire block of tri-temporal memories from the current moment $t$, the past moment $t-1$, and the future moment $t+1$ being synergized and written to the future moment $t+1$ in LMTTM.
-![framework](https://github.com/WHKai666666/LMTTM-VMI/blob/main/images/write.png)
+![framework](./images/write.png)
 
 ## Requirement
 
