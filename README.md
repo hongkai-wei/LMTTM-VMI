@@ -79,13 +79,6 @@ entire memory block is iteratively updated during the interaction. (b) is the me
 structure of our LMTTM, which can be viewed as a chain of k memory units linked
 together, and is iteratively updated one memory unit at a time during the interaction.
 
-![linkedmemory](./images/linkedmemory.png)
-<style>
-    img[alt="linkedmemory"]{
-        width:250px;
-    }
-</style>
-
 ### Read from Linked Memory
 
 Illustration of different Reads. (a) is the entire block of memory that will be read by the TTM. (b) is the coordinated read operation for the current moment $t$, the past moment $t-1$ and the future moment $t+1$.
