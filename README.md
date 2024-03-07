@@ -78,6 +78,7 @@ Illustration of different memory. (a) is the memory structure of TTM, where the
 entire memory block is iteratively updated during the interaction. (b) is the memory
 structure of our LMTTM, which can be viewed as a chain of k memory units linked
 together, and is iteratively updated one memory unit at a time during the interaction.
+
 ![linkedmemory](./images/linkedmemory.png)
 
 ### Read from Linked Memory
