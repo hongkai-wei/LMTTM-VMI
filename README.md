@@ -29,15 +29,15 @@ Our experiments on MedMNIST v2 datasets demonstrate the superiority of **LMTTM**
 
 > LMTTM-VMI on AdrenalMNIST3D and OrganMNIST3D dataset 
 
-[![](images/omni_result.gif)](https://www.youtube.com/watch?v=eWgUHj8lNns&list=PLfYk__bSOigA_EAE4iX1p0Pi3W59jn_GD)
+![result0](./images/result0.gif)
 
 > LMTTM-VMI on FractureMNIST3D and NoduleMNIST3D dataset 
 
-[![](./images/mvi_39271.gif)](https://www.youtube.com/watch?v=2RIpCtxMYEg&list=PLfYk__bSOigC-b67N_BBrCRtlJ9wW60ju&index=2&t=0s)
+![result1](./images/result1.gif)
 
-> LMTTM-VMI on VesselMNIST3D and SynapseMNIST3D dataset 
+> LMTTM-VMI on SynapseMNIST3D and VesselMNIST3D dataset 
 
-[![](./images/mvi_39271.gif)](https://www.youtube.com/watch?v=2RIpCtxMYEg&list=PLfYk__bSOigC-b67N_BBrCRtlJ9wW60ju&index=2&t=0s)
+![result2](./images/result2.gif)
 
 ## RoadMap
 
@@ -65,7 +65,6 @@ Our experiments on MedMNIST v2 datasets demonstrate the superiority of **LMTTM**
 - <img src="https://latex.codecogs.com/svg.image?\textrm{I}^{t}"/> represents the input at moment t.
 - <img src="https://latex.codecogs.com/svg.image?\textrm{O}^{t}"/> represents the output features obtained after MDU output. It is used for result classification and writing to memory.
 - <img src="https://latex.codecogs.com/svg.image?\textrm{W},\textrm{N}"/> represents the size of the memory block, respectively the memory block length and dimension.
-
 - <img src="https://latex.codecogs.com/svg.image?\textrm{Z}^{t-1},\textrm{Z}^{t},\textrm{Z}^{t&plus;1}"/> denotes the feature information read from memory at different moments in time.
 
 ## LMTTM-Architecture
@@ -79,12 +78,18 @@ Illustration of different memory. (a) is the memory structure of TTM, where the
 entire memory block is iteratively updated during the interaction. (b) is the memory
 structure of our LMTTM, which can be viewed as a chain of k memory units linked
 together, and is iteratively updated one memory unit at a time during the interaction.
-![framework](./images/linkedmemory.png)
+
+![linkedmemory](./images/linkedmemory.png)
+<style>
+    img[alt="linkedmemory"]{
+        width:250px;
+    }
+</style>
 
 ### Read from Linked Memory
 
 Illustration of different Reads. (a) is the entire block of memory that will be read by the TTM. (b) is the coordinated read operation for the current moment $t$, the past moment $t-1$ and the future moment $t+1$.
-![framework](./images/read.png)
+![read](./images/read.png)
 
 ### Memory Distillation Unit
 
@@ -93,7 +98,7 @@ In the LMTTM architecture, the processing unit is designed as <img src="https://
 ### Write to Linked Memory
 
 Illustration of different Writes. (a) is the entire block of memories from the current moment in TTM being written to the next moment in the entire block. (b) is the entire block of tri-temporal memories from the current moment $t$, the past moment $t-1$, and the future moment $t+1$ being synergized and written to the future moment $t+1$ in LMTTM.
-![framework](./images/write.png)
+![write](./images/write.png)
 
 ## Requirement
 
@@ -128,7 +133,6 @@ Modify the `dataset_name`, `out_class_num` and `epoch` parameters in the configu
 And then activate your virtual environment, followed by executing `python train.py base.json`. 
 
 ###  Test
-
 As with the TRAIN process, modify the corresponding parameters, then activate the virtual environment and execute `python predict.py base.json`
 
 ## Acknowledge
@@ -139,4 +143,3 @@ This work is based on [TTM(Token Turing Machine)](https://arxiv.org/abs/2211.091
 LMTTM's code is released under the Apache License 2.0. A permissive license whose main conditions require preservation of copyright and license notices. Contributors provide an express grant of patent rights. Licensed works, modifications, and larger works may be distributed under different terms and without source code.See [LICENSE](https://github.com/WHKai666666/LMTTM-VMI/blob/main/LICENSE "LICENSE") for further details. 
 
 ------
-
