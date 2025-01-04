@@ -14,7 +14,6 @@ import random
 class GeneralImgsDataset(Dataset):
     '''
     A PyTorch dataset for loading image data.
-
     Args:
     - imgs_path (str): The path to the directory containing the image data.
     - transforme (transformer) : The transformer to apply to the image data.
