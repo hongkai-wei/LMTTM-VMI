@@ -1,4 +1,4 @@
-# [LMTTM-VMI: Linked Memory Token Turing Machine for 3D Volumetric Medical Image Classification](https://anonymous.4open.science/w/Mono3DVLT_Page/](https://hongkai-wei.github.io/LMTTM-VMI_Page/).
+# [LMTTM-VMI: Linked Memory Token Turing Machine for 3D Volumetric Medical Image Classification](https://hongkai-wei.github.io/LMTTM-VMI_Page/).
 
 
 Biomedical imaging is vital for the diagnosis and treatment of various medical conditions, yet the effective integration of deep learning technologies into this field presents challenges. Traditional methods often struggle to efficiently capture the spatial characteristics and intricate structural features of 3D volumetric medical images, limiting memory utilization and model adaptability. 
