@@ -8,7 +8,6 @@ Our experiments on MedMNIST v2 datasets demonstrate the superiority of **LMTTM**
 
 - [LMTTM-VMI: Linked Memory Token Turing Machine for 3D Volumetric Medical Image Classification](#lmttm-vmi)
   - [Results](#results)
-  - [RoadMap](#roadmap)
   - [Protocol](#protocol)
   - [LMTTM-Architecture](#lmttm-architecture)
     - [Linked Memory](#test)
@@ -38,26 +37,6 @@ Our experiments on MedMNIST v2 datasets demonstrate the superiority of **LMTTM**
 > LMTTM-VMI on SynapseMNIST3D and VesselMNIST3D dataset 
 
 ![result2](./images/result2.gif)
-
-## RoadMap
-
-| Date   | Event                                                        |
-| ------ | ------------------------------------------------------------ |
-| 202405 | Finish the papers                       |
-| 202403 | Preparing papers                                             |
-| 202402 | Get Results on other five MedMNIST3D datasets  |
-| 202402 | LMTTM can train on other five MedMNIST3D datasets                                   |
-| 202401 | Get Result on the OrganMNIST3D  |
-| 202401 | LMTTM can train on the OrganMNIST3D dataset                        |
-| 202312 | Optimized LMTTM                     |
-| 202311 | Try LMTTM on the OrganMNIST3D dataset                           |
-| 202311 | Design the whole network about LMTTM                                       |
-| 202310 | Start the idea about Linked Memory                                   |
-| 202310 | Research the Memory module in TTM                                     |
-| 202309 | TTM can do the Basic Classification on the OrganMNIST3D dataset         |
-| 202308 | Try TTM on the OrganMNIST3D dataset                               |
-| 202307 | Convert TTM source code from JAX to Pytorch                                     |
-| 202306 | Start research on TTM                                              |
 
 ## Protocol
 
