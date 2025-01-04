@@ -13,7 +13,7 @@ config = Config.getInstance()
 # rewrite the medmnist class
 
 class MedMNISTDataset:
-    # root文件下包含*.npz就行
+
     def __init__(self, dataset_name=config["dataset_name"], batch_size=config["batch_size"], split="train", transform=None, target_transform=None, download=False, root=config["root"]):
         self.dataset_name = dataset_name
         self.batch_size = batch_size
