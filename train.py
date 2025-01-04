@@ -33,7 +33,6 @@ else:
 data_loader = get_dataloader("train", config=config, download=True, transform=None)
 val_loader = get_dataloader("val", config=config, download=False, transform=None)
 
-
 torch.manual_seed(3407)
 os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
 torch.use_deterministic_algorithms(True)
