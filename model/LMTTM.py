@@ -76,7 +76,7 @@ class PreProcessResnet18(nn.Module):
         x = self.resnet.conv1(x)
         x = self.resnet.bn1(x)
         x = self.resnet.relu(x)
-        x = self.resnet.maxpool(x)
+        x = self.resnet.maxpool(x) 
 
         x = self.resnet.layer1(x)
         x = self.resnet.layer2(x)#128
