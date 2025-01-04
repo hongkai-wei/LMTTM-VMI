@@ -8,7 +8,7 @@
     "log_dir": "./logs",
     "checkpoint_dir": "./checkpoints",
     "model": {
-        "model": "lmttm",
+        "model": "lmttm", 
         "_all_model_": "ttm, lmttm",
         "drop_r": 0.2,
         "preprocess_mode": "3d",
