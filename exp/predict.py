@@ -64,7 +64,7 @@ def predict():
             all_y += all
 
             all_real += result
-            ###   B,C,STEP,H,W
+            
         print("\n Total sample size:",all_y,"Predicting the right amount:",all_real)
         print("acc is {}%".format((all_real/all_y)*100))
 
