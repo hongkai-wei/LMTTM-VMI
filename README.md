@@ -21,6 +21,7 @@ To address this, we introduce a **L**inked **M**emory **T**oken **T**uring **M**
     - [Test](#test)
   - [Acknowledge](#acknowledge)
   - [License](#license)
+  - [Citation](#citation)
 
 ------
 
@@ -116,7 +117,8 @@ This work is based on [TTM(Token Turing Machine)](https://arxiv.org/abs/2211.091
 
 LMTTM's code is released under the Apache License 2.0. A permissive license whose main conditions require preservation of copyright and license notices. Contributors provide an express grant of patent rights. Licensed works, modifications, and larger works may be distributed under different terms and without source code.See [LICENSE](https://github.com/WHKai666666/LMTTM-VMI/blob/main/LICENSE "LICENSE") for further details. 
 
-## Cite
+## Citation
+```bibtex
 @article{WEI2025108640,
 title = {LMTTM-VMI: Linked Memory Token Turing Machine for 3D volumetric medical image classification},
 journal = {Computer Methods and Programs in Biomedicine},
@@ -130,5 +132,6 @@ author = {Hongkai Wei and Yang Yang and Shijie Sun and Mingtao Feng and Rong Wan
 keywords = {Neural Turing Machine, Token Turing Machine, Collaborative memory network, MedMNIST v2 dataset, 3D volumetric medical image classification},
 abstract = {Biomedical imaging is vital for the diagnosis and treatment of various medical conditions, yet the effective integration of deep learning technologies into this field presents challenges. Traditional methods often struggle to efficiently capture the spatial characteristics and intricate structural features of 3D volumetric medical images, limiting memory utilization and model adaptability. To address this, we introduce a Linked Memory Token Turing Machine (LMTTM), which utilizes external linked memory to efficiently process spatial dependencies and structural complexities within 3D volumetric medical images, aiding in accurate diagnoses. LMTTM can efficiently record the features of 3D volumetric medical images in an external linked memory module, enhancing complex image classification through improved feature accumulation and reasoning capabilities. Our experiments on six 3D volumetric medical image datasets from the MedMNIST v2 demonstrate that our proposed LMTTM model achieves average ACC of 82.4%, attaining state-of-the-art (SOTA) performance. Moreover, ablation studies confirmed that the Linked Memory outperforms its predecessor, TTM’s original Memory, by up to 5.7%, highlighting LMTTM’s effectiveness in 3D volumetric medical image classification and its potential to assist healthcare professionals in diagnosis and treatment planning. The code is released at https://github.com/hongkai-wei/LMTTM-VMI.}
 }
+```
 
 ------
