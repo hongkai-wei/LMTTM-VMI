@@ -1,7 +1,7 @@
 # [LMTTM-VMI: Linked Memory Token Turing Machine for 3D Volumetric Medical Image Classification](https://hongkai-wei.github.io/LMTTM-VMI_Page/).
 Author: Hongkai Wei, Yang Yang, Shijie Sun, Mingtao Feng, Rong Wang, and Xianfeng Han
 
-The paper has been accepted by Computer Methods and Programs in Biomedicine (CMPB) 🎉.
+The paper has been accepted by **Computer Methods and Programs in Biomedicine (CMPB)** 🎉.
 
 School of Information Engineering, Chang'an University.
 School of Data Science and Artificial Intelligence, Chang'an University.
